@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: kube-ao
+  namespace: <your-namespace-here>
+  labels:
+    app: kube-ao
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kube-ao
+  template:
+    metadata:
+      labels:
+        app: kube-ao
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: kube-ao
+          image: 'cmrust/kube-ao:v0.1'
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 200m
+              memory: 128Mi
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
