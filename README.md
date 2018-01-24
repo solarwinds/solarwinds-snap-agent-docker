@@ -11,3 +11,8 @@ To run a bash shell in the container instead:
 ```
 docker run -it kube-ao /bin/bash
 ```
+
+To deploy to Kubernetes, replace `<your-namespace-here>` in `kube-ao-deployment.yaml` and run:
+```
+kubectl apply -f kube-ao-deployment.yaml
+```
