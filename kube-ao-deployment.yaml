@@ -31,6 +31,19 @@ spec:
             requests:
               cpu: 200m
               memory: 128Mi
+          volumeMounts:
+            - name: kube-ao-config
+              readOnly: true
+              mountPath: /opt/appoptics/etc/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: kube-ao-config
+          secret:
+            secretName: kube-ao-config-secret
+            items:
+              - key: appoptics-config.yaml
+                path: config.yaml
+            defaultMode: 420
   strategy:
     type: RollingUpdate
     rollingUpdate:
