@@ -46,6 +46,7 @@ spec:
             defaultMode: 420
   strategy:
     type: RollingUpdate
+    # TODO: consider for RollingUpdate, does having a new pod deploy before tearing each down cause issue?
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
