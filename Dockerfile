@@ -40,6 +40,7 @@ RUN \
   chmod 775 -R /var/run/appoptics
 
 COPY ./conf/appoptics-config.yaml /opt/appoptics/etc/config.yaml
+COPY ./conf/appoptics-config-kubernetes.yaml /opt/appoptics/etc/plugins.d/kubernetes.yaml
 
 USER appoptics
 WORKDIR /opt/appoptics
