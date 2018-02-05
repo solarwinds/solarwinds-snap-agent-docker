@@ -11,17 +11,10 @@ RUN \
   apt-get -y upgrade && \
   apt-get -y install apt-transport-https
 
-# TODO: THIS COMMENTED SECTION ISNT WORKING, SO USING --allow-unauthenticated BELOW FOR NOW
-#RUN \
-#  apt-get -y install debian-archive-keyring curl && \
-#  curl -sS -o /tmp/packagecloud.key https://packagecloud.io/gpg.key && \
-#  apt-key add /tmp/packagecloud.key
-# another option for grabbing key is this, but it isn't working either:
-#  apt-key adv --keyserver packagecloud.io --recv-keys 7BD5A64799D0A3FB
-
 # Install AppOptics Host Agent from their Ubuntu repo
 COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.list
 
+# TODO: remove --allow-unauthenticated on the appoptics-snaptel pkg installation, packagecloud.io keys are currently invalid
 RUN \
   apt-get update && \
   apt-get -y --allow-unauthenticated install appoptics-snaptel && \
