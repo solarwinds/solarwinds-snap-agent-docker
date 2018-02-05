@@ -32,6 +32,12 @@ RUN \
   chown -R appoptics:appoptics /var/run/appoptics && \
   chmod 775 -R /var/run/appoptics
 
+# Disable Host Agent System Metrics (no need to waste resources on gathering system metrics for the AppOptics pod)
+RUN \
+  rm /opt/appoptics/autoload/snap-plugin-collector-aosystem && \
+  rm /opt/appoptics/autoload/task-aosystem-warmup.yaml && \
+  rm /opt/appoptics/autoload/task-aosystem.yaml
+
 COPY ./conf/appoptics-config.yaml /opt/appoptics/etc/config.yaml
 COPY ./conf/appoptics-config-kubernetes.yaml /opt/appoptics/etc/plugins.d/kubernetes.yaml
 
