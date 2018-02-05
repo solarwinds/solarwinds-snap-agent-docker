@@ -15,6 +15,7 @@ spec:
       labels:
         app: kube-ao
     spec:
+      serviceAccountName: kube-ao-serviceaccount
       nodeSelector:
         node-role.kubernetes.io/master: ''
       tolerations:
