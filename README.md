@@ -1,6 +1,14 @@
 # kube-ao
 Kubernetes assets for running AppOptics
 
+## Development
+
+The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/cmrust/kube-ao/). You can build and push that with the included `Dockerfile` by running:
+```
+docker build -t cmrust/kube-ao:v0.1 .
+docker push cmrust/kube-ao:v0.1
+```
+
 ## Installation
 
 To deploy to Kubernetes, first update `APPOPTICS_TOKEN` in `conf/appoptics-config.yaml` and then push it as a secret to your namespace:
