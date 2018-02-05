@@ -6,7 +6,7 @@ metadata:
   labels:
     app: kube-ao
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: kube-ao
@@ -27,10 +27,10 @@ spec:
           resources:
             limits:
               cpu: 200m
-              memory: 128Mi
+              memory: 512Mi
             requests:
               cpu: 200m
-              memory: 128Mi
+              memory: 512Mi
           volumeMounts:
             - name: kube-ao-config
               readOnly: true
