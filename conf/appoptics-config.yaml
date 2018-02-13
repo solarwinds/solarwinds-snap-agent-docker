@@ -3,8 +3,8 @@
 # 1 - Debug, 2 - Info, 3 - Warning, 4 - Error, 5 - Fatal.
 # Default value is 3.
 #log_level: 3
-log_path: /var/log/appoptics
 log_format: text
+log_colors: true
 
 control:
   # Configuration auto_discover_path sets the directory(s) to auto load plugins and tasks on
