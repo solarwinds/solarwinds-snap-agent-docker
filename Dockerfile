@@ -16,8 +16,11 @@ COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.li
 
 # TODO: remove --allow-unauthenticated on the appoptics-snaptel pkg installation, packagecloud.io keys are currently invalid
 RUN \
+  apt-get -y install apt-transport-https ca-certificates curl && \
+  echo "deb https://packagecloud.io/AppOptics/appoptics-snap-ci/ubuntu/ trusty main" > /etc/apt/sources.list.d/appoptics.list && \
+  curl -L https://packagecloud.io/AppOptics/appoptics-snap-ci/gpgkey | apt-key add - && \
   apt-get update && \
-  apt-get -y --allow-unauthenticated install appoptics-snaptel && \
+  apt-get -y install appoptics-snaptel && \
   rm -rf /var/lib/apt/lists/* /tmp/*
 
 # The dir-structure and perms commands below were pulled from the systemd service file bundled with the dpkg
