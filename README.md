@@ -1,13 +1,9 @@
 # kube-ao
 Kubernetes assets for running AppOptics
 
-## Development
+## About
 
-The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/cmrust/kube-ao/). You can build and push that with the included `Dockerfile` by running:
-```
-docker build -t cmrust/kube-ao:v0.1 .
-docker push cmrust/kube-ao:v0.1
-```
+This deploys a single pod to run on a master node and talk to the kube-api. Communication with kube-api is facilitated by the included ServiceAccount with RBAC restrictions.
 
 ## Installation
 
@@ -27,3 +23,11 @@ kubectl apply -f kube-ao-deployment.yaml
 ```
 
 Enable the Kubernetes plugin in the AppOptics UI and you should start seeing data trickle in.
+
+## Development
+
+The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/cmrust/kube-ao/). You can build and push that with the included `Dockerfile` by running:
+```
+docker build -t cmrust/kube-ao:v0.1 .
+docker push cmrust/kube-ao:v0.1
+```
