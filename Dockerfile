@@ -9,14 +9,12 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN \
   apt-get update && \
   apt-get -y upgrade && \
-  apt-get -y install apt-transport-https
+  apt-get -y install apt-transport-https ca-certificates curl
 
 # Install AppOptics Host Agent from their Ubuntu repo
 COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.list
 
-# TODO: remove --allow-unauthenticated on the appoptics-snaptel pkg installation, packagecloud.io keys are currently invalid
 RUN \
-  apt-get -y install apt-transport-https ca-certificates curl && \
   curl -L https://packagecloud.io/AppOptics/appoptics-snap/gpgkey | apt-key add - && \
   apt-get update && \
   apt-get -y install appoptics-snaptel && \
