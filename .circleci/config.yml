@@ -1,6 +1,9 @@
 version: 2
 jobs:
-  test:
+  build:
+    docker:
+      - image: docker:stable-git
+
     steps:
       - setup_remote_docker
       - checkout
@@ -8,3 +11,9 @@ jobs:
       - run:
           name: Build docker image
           command: docker build .
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
