@@ -19,7 +19,8 @@ RUN \
   apt-get update && \
   apt-get -y install appoptics-snaptel && \
   apt-get -y purge curl && \
-  rm -rf /var/lib/apt/lists/* /tmp/*
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # The dir-structure and perms commands below were pulled from the systemd service file bundled with the dpkg
 RUN \
