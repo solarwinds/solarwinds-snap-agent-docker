@@ -3,6 +3,7 @@ jobs:
   test:
     steps:
       - setup_remote_docker
+      - checkout
 
       - run:
           name: Build docker image
