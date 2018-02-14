@@ -1,0 +1,9 @@
+version: 2
+jobs:
+  test:
+    steps:
+      - setup_remote_docker
+
+      - run:
+          name: Build docker image
+          command: docker build .
