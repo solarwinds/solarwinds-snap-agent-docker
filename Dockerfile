@@ -18,6 +18,7 @@ RUN \
   curl -L https://packagecloud.io/AppOptics/appoptics-snap/gpgkey | apt-key add - && \
   apt-get update && \
   apt-get -y install appoptics-snaptel && \
+  apt-get -y purge curl && \
   rm -rf /var/lib/apt/lists/* /tmp/*
 
 # The dir-structure and perms commands below were pulled from the systemd service file bundled with the dpkg
