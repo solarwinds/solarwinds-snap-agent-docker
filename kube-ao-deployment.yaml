@@ -25,13 +25,6 @@ spec:
       containers:
         - name: kube-ao
           image: 'cmrust/kube-ao:v0.1'
-          resources:
-            limits:
-              cpu: 200m
-              memory: 512Mi
-            requests:
-              cpu: 200m
-              memory: 512Mi
           volumeMounts:
             - name: kube-ao-config
               readOnly: true
