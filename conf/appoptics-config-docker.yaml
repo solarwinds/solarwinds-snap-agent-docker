@@ -1,0 +1,9 @@
+collector:
+  docker:
+    all:
+      endpoint: "unix:///var/run/docker.sock"
+      procfs: "/host/proc"
+
+load:
+  plugin: snap-plugin-collector-aodocker
+  task: task-aodocker.yaml
