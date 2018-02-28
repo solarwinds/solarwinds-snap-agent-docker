@@ -47,7 +47,7 @@ spec:
             path: /sys/fs/cgroup
         - name: kube-ao-ds-config
           secret:
-            secretName: kube-ao-ds-config-secret
+            secretName: kube-ao-config-secret
             items:
               - key: appoptics-config.yaml
                 path: config.yaml
