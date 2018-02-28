@@ -25,19 +25,15 @@ RUN \
 # The dir-structure and perms commands below were pulled from the systemd service file bundled with the dpkg
 RUN \
   mkdir -p /tmp/appoptics-snaptel && \
-  chown -R appoptics:appoptics /tmp/appoptics-snaptel && \
   chmod 775 -R /tmp/appoptics-snaptel && \
   mkdir -p /var/log/appoptics && \
-  chown -R appoptics:appoptics /var/log/appoptics && \
   chmod 775 -R /var/log/appoptics && \
   mkdir -p /var/run/appoptics && \
-  chown -R appoptics:appoptics /var/run/appoptics && \
   chmod 775 -R /var/run/appoptics
 
 COPY ./conf/appoptics-config.yaml /opt/appoptics/etc/config.yaml
 COPY ./conf/appoptics-config-docker.yaml /opt/appoptics/etc/plugins.d/docker.yaml
 
-USER appoptics
 WORKDIR /opt/appoptics
 
 # Run AppOptics Host Agent
