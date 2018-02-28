@@ -33,8 +33,9 @@ RUN \
 
 COPY ./conf/appoptics-config.yaml /opt/appoptics/etc/config.yaml
 COPY ./conf/appoptics-config-docker.yaml /opt/appoptics/etc/plugins.d/docker.yaml
+COPY ./conf/appoptics-init.sh /opt/appoptics/etc/init.sh
 
 WORKDIR /opt/appoptics
 
 # Run AppOptics Host Agent
-CMD ["/opt/appoptics/sbin/snapteld", "--config", "/opt/appoptics/etc/config.yaml"]
+CMD ["/opt/appoptics/etc/init.sh"]

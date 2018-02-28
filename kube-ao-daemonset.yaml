@@ -19,6 +19,11 @@ spec:
       - name: kube-ao-ds
         image: 'cmrust/kube-ao-ds:v0.1'
         imagePullPolicy: Always
+        env:
+          - name: APPOPTICS_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
@@ -28,7 +33,6 @@ spec:
           - name: cgroup
             mountPath: /sys/fs/cgroup
           - name: kube-ao-ds-config
-            readOnly: true
             mountPath: /opt/appoptics/etc/config.yaml
             subPath: config.yaml
       volumes:
@@ -47,4 +51,3 @@ spec:
             items:
               - key: appoptics-config.yaml
                 path: config.yaml
-            defaultMode: 420
