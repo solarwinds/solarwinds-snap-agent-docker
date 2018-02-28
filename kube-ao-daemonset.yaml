@@ -15,12 +15,15 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
-      securityContext:
-        fsGroup: 233
       containers:
       - name: kube-ao-ds
-        image: 'cmrust/kube-ao-ds:v0.1'
+        image: 'appoptics/kube-ao-ds:v0.1'
         imagePullPolicy: Always
+        env:
+          - name: APPOPTICS_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
@@ -30,7 +33,6 @@ spec:
           - name: cgroup
             mountPath: /sys/fs/cgroup
           - name: kube-ao-ds-config
-            readOnly: true
             mountPath: /opt/appoptics/etc/config.yaml
             subPath: config.yaml
       volumes:
@@ -45,8 +47,7 @@ spec:
             path: /sys/fs/cgroup
         - name: kube-ao-ds-config
           secret:
-            secretName: kube-ao-ds-config-secret
+            secretName: kube-ao-config-secret
             items:
               - key: appoptics-config.yaml
                 path: config.yaml
-            defaultMode: 420
