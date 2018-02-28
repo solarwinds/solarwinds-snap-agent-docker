@@ -41,12 +41,12 @@ Note: If the `docker` group's `gid` on your host machine is not `233`, you'll ne
 
 ## Development
 
-The included Kubernetes resources rely on Docker images from Docker Hub, see respectively for the [Deployment](https://hub.docker.com/r/cmrust/kube-ao/) and [DaemonSet](https://hub.docker.com/r/cmrust/kube-ao-ds/). You can build and push those with the included Dockerfiles by running:
+The included Kubernetes resources rely on Docker images from Docker Hub, see respectively for the [Deployment](https://hub.docker.com/r/appoptics/kube-ao/) and [DaemonSet](https://hub.docker.com/r/appoptics/kube-ao-ds/). You can build and push those with the included Dockerfiles by running:
 ```
-docker build -t cmrust/kube-ao:v0.1 .
-docker push cmrust/kube-ao:v0.1
+docker build -t appoptics/kube-ao:v0.1 .
+docker push appoptics/kube-ao:v0.1
 ```
 ```
-docker build -f Dockerfile-ds -t cmrust/kube-ao-ds:v0.1 .
-docker push cmrust/kube-ao-ds:v0.1
+docker build -f Dockerfile-ds -t appoptics/kube-ao-ds:v0.1 .
+docker push appoptics/kube-ao-ds:v0.1
 ```

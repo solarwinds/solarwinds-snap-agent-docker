@@ -24,7 +24,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: kube-ao
-          image: 'cmrust/kube-ao:v0.1'
+          image: 'appoptics/kube-ao:v0.1'
           volumeMounts:
             - name: kube-ao-config
               readOnly: true

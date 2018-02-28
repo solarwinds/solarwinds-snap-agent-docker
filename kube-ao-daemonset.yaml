@@ -17,7 +17,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: kube-ao-ds
-        image: 'cmrust/kube-ao-ds:v0.1'
+        image: 'appoptics/kube-ao-ds:v0.1'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_NODE_NAME
