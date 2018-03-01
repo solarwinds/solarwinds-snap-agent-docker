@@ -24,6 +24,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: HOST_PROC
+            value: "/host/proc"
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
