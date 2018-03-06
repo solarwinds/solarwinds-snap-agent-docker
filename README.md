@@ -37,8 +37,6 @@ kubectl apply -f kube-ao-daemonset.yaml
 
 Enable the Docker plugin in the AppOptics UI and you should start seeing data trickle in.
 
-Note: If the `docker` group's `gid` on your host machine is not `233`, you'll need to manually change this in the DaemonSet yaml before deploying. See: `securityContext.fsGroup`.
-
 ## Development
 
 The included Kubernetes resources rely on Docker images from Docker Hub, see respectively for the [Deployment](https://hub.docker.com/r/appoptics/kube-ao/) and [DaemonSet](https://hub.docker.com/r/appoptics/kube-ao-ds/). You can build and push those with the included Dockerfiles by running:
