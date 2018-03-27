@@ -25,6 +25,14 @@ spec:
       containers:
         - name: kube-ao
           image: 'appoptics/kube-ao:v0.1'
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           volumeMounts:
             - name: kube-ao-config
               readOnly: true
