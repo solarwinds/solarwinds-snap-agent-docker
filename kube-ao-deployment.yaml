@@ -2,7 +2,7 @@ kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
   name: kube-ao
-  namespace: <your-namespace-here>
+  namespace: kube-system
   labels:
     app: kube-ao
 spec:

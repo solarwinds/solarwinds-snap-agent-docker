@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: kube-ao-ds
-  namespace: <your-namespace-here>
+  namespace: kube-system
   labels:
     daemon: kube-ao-ds
 spec:
