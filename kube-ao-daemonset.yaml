@@ -20,7 +20,7 @@ spec:
         image: 'appoptics/kube-ao-ds:v0.1'
         imagePullPolicy: Always
         env:
-          - name: APPOPTICS_NODE_NAME
+          - name: APPOPTICS_HOSTNAME
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
