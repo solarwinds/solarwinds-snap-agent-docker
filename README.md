@@ -5,7 +5,7 @@ Kubernetes assets for running AppOptics
 ## About
 
 This repo contains two Kubernetes assets:
-- Deployment - A single pod to run on a master node and talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
+- Deployment - A single pod to talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
 - DaemonSet - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics to AppOptics.
 
 ## Installation

@@ -16,12 +16,6 @@ spec:
         app: kube-ao-k8s
     spec:
       serviceAccountName: kube-ao-serviceaccount
-      nodeSelector:
-        node-role.kubernetes.io/master: ''
-      tolerations:
-        - key: node-role.kubernetes.io/master
-          operator: Exists
-          effect: NoSchedule
       containers:
         - name: kube-ao-k8s
           image: 'appoptics/kube-ao:v0.2'
