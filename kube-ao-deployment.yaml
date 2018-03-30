@@ -1,19 +1,19 @@
 kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
-  name: kube-ao
+  name: kube-ao-k8s
   namespace: kube-system
   labels:
-    app: kube-ao
+    app: kube-ao-k8s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kube-ao
+      app: kube-ao-k8s
   template:
     metadata:
       labels:
-        app: kube-ao
+        app: kube-ao-k8s
     spec:
       serviceAccountName: kube-ao-serviceaccount
       nodeSelector:
@@ -23,9 +23,16 @@ spec:
           operator: Exists
           effect: NoSchedule
       containers:
-        - name: kube-ao
-          image: 'appoptics/kube-ao:v0.1'
+        - name: kube-ao-k8s
+          image: 'appoptics/kube-ao:v0.2'
           imagePullPolicy: Always
+          env:
+            - name: APPOPTICS_TOKEN
+              value: 'APPOPTICS_TOKEN'
+            - name: APPOPTICS_ENABLE_KUBERNETES
+              value: 'true'
+            - name: APPOPTICS_DISABLE_HOSTAGENT
+              value: 'true'
           resources:
             limits:
               cpu: 100m
@@ -33,21 +40,46 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          volumeMounts:
-            - name: kube-ao-config
-              readOnly: true
-              mountPath: /opt/appoptics/etc/config.yaml
-              subPath: config.yaml
-      volumes:
-        - name: kube-ao-config
-          secret:
-            secretName: kube-ao-config-secret
-            items:
-              - key: appoptics-config.yaml
-                path: config.yaml
-            defaultMode: 420
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
+---
+apiVersion: v1
+kind: List
+items:
+# Service Account for kube-ao
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: kube-ao-serviceaccount
+    namespace: kube-system
+# Create ClusterRole that enables kube-ao to access requisite kube-api resources
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  metadata:
+    name: kube-ao-clusterrole
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["*"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+# Bind the kube-ao-role with the kube-ao-serviceaccount we created above
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: kube-ao-clusterrolebinding
+  subjects:
+  - kind: ServiceAccount
+    name: kube-ao-serviceaccount
+    namespace: kube-system
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: kube-ao-clusterrole
