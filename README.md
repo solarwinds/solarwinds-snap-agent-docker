@@ -1,27 +1,23 @@
 # kube-ao
+
 Kubernetes assets for running AppOptics
 
 ## About
 
 This repo contains two Kubernetes assets:
-- Deployment - A single pod to run on a master node and talk to the kube-api. Communication with kube-api is facilitated by the included ServiceAccount with RBAC restrictions.
-- DaemonSet - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics.
+- Deployment - A single pod to talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
+- DaemonSet - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics to AppOptics.
 
 ## Installation
 
-To deploy to Kubernetes, first update `APPOPTICS_TOKEN` in `conf/appoptics-config.yaml` and then push it as a secret to your namespace:
-```
-kubectl create secret -n <your-namespace-here> generic kube-ao-config-secret --from-file=./conf/appoptics-config.yaml
-```
-
 ### Deployment
 
-Then create the ServiceAccount that your pod will use to access the kube-api. Replace `<your-namespace-here>` references in `kube-ao-serviceaccount.yaml` and run:
-```
-kubectl apply -f kube-ao-serviceaccount.yaml
+If you're using RBAC on your cluster you'll need to deploy the Service Account first so that the agent can talk to your Kubernetes API:
+```	
+kubectl apply -f kube-ao-serviceaccount.yaml	
 ```
 
-Then replace `<your-namespace-here>` in `kube-ao-deployment.yaml` and run:
+To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `kube-ao-deployment.yaml` and run:
 ```
 kubectl apply -f kube-ao-deployment.yaml
 ```
@@ -30,21 +26,36 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 ### DaemonSet
 
-Replace `<your-namespace-here>` in `kube-ao-daemonset.yaml` and run:
+To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `kube-ao-daemonset.yaml` and run:
 ```
 kubectl apply -f kube-ao-daemonset.yaml
 ```
 
 Enable the Docker plugin in the AppOptics UI and you should start seeing data trickle in.
 
+### Notes
+
+By default, these assets deploy to the `kube-system` namespace.
+
+## Configuration
+
+### Environment Parameters
+
+The following environment parameters are available:
+
+ Parameter                   | Description
+-----------------------------|---------------------
+ APPOPTICS_TOKEN             | Your AppOptics token. This parameter is required.
+ LOG_LEVEL                   | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
+ APPOPTICS_HOSTNAME          | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
+ APPOPTICS_ENABLE_DOCKER     | Set this to `true` to enable the Docker plugin.
+ APPOPTICS_ENABLE_KUBERNETES | Set this to `true` to enable the Kubernetes plugin.
+ APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
+
 ## Development
 
-The included Kubernetes resources rely on Docker images from Docker Hub, see respectively for the [Deployment](https://hub.docker.com/r/appoptics/kube-ao/) and [DaemonSet](https://hub.docker.com/r/appoptics/kube-ao-ds/). You can build and push those with the included Dockerfiles by running:
+The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/appoptics/kube-ao), see the [Dockerfile](Dockerfile) for more details. You can build and push this by running:
 ```
 docker build -t appoptics/kube-ao:v0.1 .
 docker push appoptics/kube-ao:v0.1
-```
-```
-docker build -f Dockerfile-ds -t appoptics/kube-ao-ds:v0.1 .
-docker push appoptics/kube-ao-ds:v0.1
 ```

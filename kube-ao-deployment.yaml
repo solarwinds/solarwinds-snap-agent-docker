@@ -1,31 +1,32 @@
 kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
-  name: kube-ao
-  namespace: <your-namespace-here>
+  name: kube-ao-k8s
+  namespace: kube-system
   labels:
-    app: kube-ao
+    app: kube-ao-k8s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kube-ao
+      app: kube-ao-k8s
   template:
     metadata:
       labels:
-        app: kube-ao
+        app: kube-ao-k8s
     spec:
       serviceAccountName: kube-ao-serviceaccount
-      nodeSelector:
-        node-role.kubernetes.io/master: ''
-      tolerations:
-        - key: node-role.kubernetes.io/master
-          operator: Exists
-          effect: NoSchedule
       containers:
-        - name: kube-ao
-          image: 'appoptics/kube-ao:v0.1'
+        - name: kube-ao-k8s
+          image: 'appoptics/kube-ao:v0.2'
           imagePullPolicy: Always
+          env:
+            - name: APPOPTICS_TOKEN
+              value: 'APPOPTICS_TOKEN'
+            - name: APPOPTICS_ENABLE_KUBERNETES
+              value: 'true'
+            - name: APPOPTICS_DISABLE_HOSTAGENT
+              value: 'true'
           resources:
             limits:
               cpu: 100m
@@ -33,19 +34,6 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          volumeMounts:
-            - name: kube-ao-config
-              readOnly: true
-              mountPath: /opt/appoptics/etc/config.yaml
-              subPath: config.yaml
-      volumes:
-        - name: kube-ao-config
-          secret:
-            secretName: kube-ao-config-secret
-            items:
-              - key: appoptics-config.yaml
-                path: config.yaml
-            defaultMode: 420
   strategy:
     type: RollingUpdate
     rollingUpdate:
