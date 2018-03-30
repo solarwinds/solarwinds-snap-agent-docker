@@ -2,6 +2,8 @@ FROM ubuntu:xenial
 
 MAINTAINER Chris Rust <chris.rust@solarwinds.com>
 
+ENV APPOPTICS_SNAPTEL_VERSION='2.0.0-ao1.1475'
+
 USER root
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -16,7 +18,7 @@ COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.li
 RUN \
   curl -L https://packagecloud.io/AppOptics/appoptics-snap/gpgkey | apt-key add - && \
   apt-get update && \
-  apt-get -y install appoptics-snaptel=2.0.0-ao1.1475 && \
+  apt-get -y install appoptics-snaptel=${APPOPTICS_SNAPTEL_VERSION} && \
   apt-get -y purge curl && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
