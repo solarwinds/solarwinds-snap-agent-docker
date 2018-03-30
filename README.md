@@ -12,9 +12,12 @@ This repo contains two Kubernetes assets:
 
 ### Deployment
 
-The Deployment asset contains a Service Account that is needed by the AppOptics agent to talk to your Kubernetes API.
+If you're using RBAC on your cluster you'll need to deploy the Service Account first so that the agent can talk to your Kubernetes API:
+```	
+kubectl apply -f kube-ao-serviceaccount.yaml	
+```
 
-To deploy the Service Account and Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `kube-ao-deployment.yaml` and run:
+To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `kube-ao-deployment.yaml` and run:
 ```
 kubectl apply -f kube-ao-deployment.yaml
 ```
