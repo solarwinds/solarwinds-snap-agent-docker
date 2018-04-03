@@ -46,6 +46,10 @@ if [ "$APPOPTICS_ENABLE_KUBERNETES" = "true" ]; then
     mv /tmp/appoptics-configs/kubernetes.yaml /opt/appoptics/etc/plugins.d/kubernetes.yaml
 fi
 
+if [ "$APPOPTICS_ENABLE_ZOOKEEPER" = "true" ]; then
+    mv /opt/appoptics/etc/plugins.d/zookeeper.yaml.example /opt/appoptics/etc/plugins.d/zookeeper.yaml
+fi
+
 if [ "$APPOPTICS_DISABLE_HOSTAGENT" = "true" ]; then
     rm /opt/appoptics/autoload/snap-plugin-collector-aosystem
     rm /opt/appoptics/autoload/task-aosystem-warmup.yaml
