@@ -51,6 +51,7 @@ The following environment parameters are available:
  APPOPTICS_ENABLE_DOCKER     | Set this to `true` to enable the Docker plugin.
  APPOPTICS_ENABLE_KUBERNETES | Set this to `true` to enable the Kubernetes plugin.
  APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
+ APPOPTICS_ENABLE_ZOOKEEPER  | Set this to `true` to enable the Zookeeper plugin.
 
 ## Development
 
