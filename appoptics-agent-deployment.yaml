@@ -1,24 +1,24 @@
 kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
-  name: kube-ao-k8s
+  name: appoptics-agent-k8s
   namespace: kube-system
   labels:
-    app: kube-ao-k8s
+    app: appoptics-agent-k8s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kube-ao-k8s
+      app: appoptics-agent-k8s
   template:
     metadata:
       labels:
-        app: kube-ao-k8s
+        app: appoptics-agent-k8s
     spec:
-      serviceAccountName: kube-ao-serviceaccount
+      serviceAccountName: appoptics-agent-serviceaccount
       containers:
-        - name: kube-ao-k8s
-          image: 'appoptics/kube-ao:v0.2'
+        - name: appoptics-agent-k8s
+          image: 'appoptics/appoptics-agent-docker:v0.1'
           imagePullPolicy: Always
           env:
             - name: APPOPTICS_TOKEN
