@@ -1,23 +1,23 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: kube-ao-ds
+  name: appoptics-agent-ds
   namespace: kube-system
   labels:
-    daemon: kube-ao-ds
+    daemon: appoptics-agent-ds
 spec:
   template:
     metadata:
-      name: kube-ao-ds
+      name: appoptics-agent-ds
       labels:
-        daemon: kube-ao-ds
+        daemon: appoptics-agent-ds
     spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
-      - name: kube-ao-ds
-        image: 'appoptics/kube-ao:v0.2'
+      - name: appoptics-agent-ds
+        image: 'appoptics/appoptics-agent-docker:v0.1'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN
