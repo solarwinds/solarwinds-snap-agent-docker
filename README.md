@@ -4,13 +4,13 @@ Docker and Kubernetes assets for running AppOptics
 
 ## About
 
-This repo contains a Docker image for running the AppOptics agent.
+Use the containerized AppOptics agent to monitor Docker or Kubernetes environments. Monitor Kubernetes cluster and application health. Aggregate metrics across clusters distributed across multiple data centers and cloud providers. Track pods, deployments, services and more with Kubernetes-integrated service discovery.
 
-This can be used to monitor Kubernetes clusters with the two Kubernetes assets in this repo:
+Kubernetes assets:
 - [Deployment](appoptics-agent-deployment.yaml) - A single pod to talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
 - [DaemonSet](appoptics-agent-daemonset.yaml) - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics to AppOptics.
 
-Or you can use this in sidecar fashion to run the other [AppOptics Integrations](https://docs.appoptics.com/kb/host_infrastructure/integrations/).
+Alternatively, you can deploy the containerized agent in a sidecar to run the other [AppOptics Integrations](https://docs.appoptics.com/kb/host_infrastructure/integrations/) and monitor your Kubernetes applications running in the same Pod.
 
 ## Installation
 
