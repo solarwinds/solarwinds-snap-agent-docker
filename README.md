@@ -72,7 +72,7 @@ The following environment parameters are available:
 
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
-![AppOptics Kubernetes Dashboard](/kubernetes-appoptics-dashboard.png =200x200)
+<img src="kubernetes-appoptics-dashboard.png" width="400px" align="middle">
 
 ## Development
 
