@@ -70,6 +70,10 @@ The following environment parameters are available:
  APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
  APPOPTICS_ENABLE_ZOOKEEPER  | Set this to `true` to enable the Zookeeper plugin.
 
+## Dashboard
+Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
+![AppOptics Kubernetes Dashboard](/kubernetes-appoptics-dashboard.png =200x200)
+
 ## Development
 
 The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/appoptics/appoptics-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by running:
