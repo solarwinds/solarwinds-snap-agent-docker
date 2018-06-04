@@ -27,7 +27,7 @@ spec:
               fieldRef:
                 fieldPath: spec.nodeName
           - name: APPOPTICS_ENABLE_DOCKER
-            value: 'true'
+            value: 'false'
           - name: HOST_PROC
             value: '/host/proc'
         volumeMounts:
