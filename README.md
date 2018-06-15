@@ -69,11 +69,7 @@ The following environment parameters are available:
  APPOPTICS_ENABLE_KUBERNETES | Set this to `true` to enable the Kubernetes plugin.
  APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
  APPOPTICS_ENABLE_ZOOKEEPER  | Set this to `true` to enable the Zookeeper plugin.
- APPOPTICS_ENABLE_MYSQL      | Set this to `true` to enable the MySQL plugin. If enabled the following are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
- MYSQL_USER                  | Set this to your MySQL user.
- MYSQL_PASS                  | Set this to your MySQL password.
- MYSQL_HOST                  | Set this to your MySQL hostname or IP address.
- MYSQL_PORT                  | Set this to your MySQL port.
+ APPOPTICS_ENABLE_MYSQL      | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
 
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
