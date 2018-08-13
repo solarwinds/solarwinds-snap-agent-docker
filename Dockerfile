@@ -10,16 +10,22 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN \
   apt-get update && \
   apt-get -y upgrade && \
-  apt-get -y install apt-transport-https ca-certificates curl
+  apt-get -y install apt-transport-https ca-certificates curl python jq
 
 # Configure AppOptics Host Agent Ubuntu repo
 COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.list
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python get-pip.py
+RUN pip install setuptools wheel
+RUN pip install yq
+RUN pip uninstall pip -y
 
 RUN \
   curl -L https://packagecloud.io/AppOptics/appoptics-snap/gpgkey | apt-key add - && \
   apt-get update && \
   apt-get -y install appoptics-snaptel=${APPOPTICS_SNAPTEL_VERSION} && \
-  apt-get -y purge curl && \
+  apt-get -y purge curl python && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

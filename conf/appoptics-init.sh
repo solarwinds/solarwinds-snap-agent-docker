@@ -7,7 +7,7 @@ TMP_FILE='/opt/appoptics/etc/config.yaml.tmp'
 
 # APPOPTICS_TOKEN is required
 if [ -n "${APPOPTICS_TOKEN}" ]; then
-    sed "s/APPOPTICS_TOKEN/${APPOPTICS_TOKEN}/" $CONFIG_FILE > $TMP_FILE
+    cat $CONFIG_FILE |  yq ".control.plugins.publisher.\"publisher-appoptics\".all.token = \"$APPOPTICS_TOKEN\"" --yaml-output > $TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 else
     echo "Please set APPOPTICS_TOKEN."
@@ -26,14 +26,14 @@ if [ -n "${LOG_LEVEL}" ]; then
         *) loglevel=3;;
     esac
     shopt -u nocasematch
-
-    sed "s/^#log_level: 3/log_level: ${loglevel}/" $CONFIG_FILE > $TMP_FILE
+    echo
+    cat $CONFIG_FILE |  yq ".log_level = ${loglevel}" --yaml-output > $TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 fi
 
 # Use APPOPTICS_HOSTNAME as hostname_alias
 if [ -n "$APPOPTICS_HOSTNAME" ]; then
-    sed "s/# hostname_alias: myhostname/hostname_alias: ${APPOPTICS_HOSTNAME}/" $CONFIG_FILE > $TMP_FILE
+    cat $CONFIG_FILE |  yq ".control.plugins.publisher.\"publisher-appoptics\".all.hostname_alias = \"${APPOPTICS_HOSTNAME}\"" --yaml-output > $TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 fi
 
@@ -49,18 +49,29 @@ fi
 if [ "$APPOPTICS_ENABLE_ZOOKEEPER" = "true" ]; then
     mv /opt/appoptics/etc/plugins.d/zookeeper.yaml.example /opt/appoptics/etc/plugins.d/zookeeper.yaml
 fi
-
 if [ "$APPOPTICS_ENABLE_MYSQL" = "true" ]; then
     mv /opt/appoptics/etc/plugins.d/mysql.yaml.example /opt/appoptics/etc/plugins.d/mysql.yaml
     if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PORT} ]]; then
-        sed -i -e "s/root:admin\@tcp(mysql:3306)/$MYSQL_USER:$MYSQL_PASS\@tcp($MYSQL_HOST:$MYSQL_PORT)/" /opt/appoptics/etc/plugins.d/mysql.yaml
-    fi
+        cat /opt/appoptics/etc/plugins.d/mysql.yaml.example | yq ".collector.mysql.all.mysql_connection_string = \"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\"" > $TMP_FILE
+        cp $TMP_FILE $CONFIG_FILE
+     fi
 fi
 
 if [ "$APPOPTICS_DISABLE_HOSTAGENT" = "true" ]; then
     rm /opt/appoptics/autoload/snap-plugin-collector-aosystem
     rm /opt/appoptics/autoload/task-aosystem-warmup.yaml
     rm /opt/appoptics/autoload/task-aosystem.yaml
+fi
+
+if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
+    IFS=","
+    for TAG in $APPOPTICS_CUSTOM_TAGS
+    do
+       KEY=${TAG%%:*}
+       VALUE=${TAG##*:}
+       cat $CONFIG_FILE | yq ".control.tags.\"/\"[\"${KEY}\"] = \"${VALUE}\"" --yaml-output > $TMP_FILE
+       cp $TMP_FILE $CONFIG_FILE
+    done
 fi
 
 # Cleanup $TMP_FILE
