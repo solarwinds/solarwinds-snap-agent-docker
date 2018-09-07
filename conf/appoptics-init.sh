@@ -67,8 +67,8 @@ if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
     IFS=","
     for TAG in $APPOPTICS_CUSTOM_TAGS
     do
-       KEY=${TAG%%:*}
-       VALUE=${TAG##*:}
+       KEY=${TAG%%=*}
+       VALUE=${TAG##*=}
        cat $CONFIG_FILE | yq ".control.tags.\"/\"[\"${KEY}\"] = \"${VALUE}\"" --yaml-output > $TMP_FILE
        cp $TMP_FILE $CONFIG_FILE
     done

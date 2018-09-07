@@ -44,7 +44,7 @@ If you wanted to run this on Kubernetes as a sidecar for monitoring specific ser
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
 ```
 - name: zookeeper-ao-sidecar
-  image: 'appoptics/appoptics-agent-docker:v0.3'
+  image: 'appoptics/appoptics-agent-docker:v0.4'
   env:
     - name: APPOPTICS_TOKEN
       value: APPOPTICS_TOKEN
@@ -70,7 +70,7 @@ The following environment parameters are available:
  APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
  APPOPTICS_ENABLE_ZOOKEEPER  | Set this to `true` to enable the Zookeeper plugin.
  APPOPTICS_ENABLE_MYSQL      | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
- APPOPTICS_CUSTOM_TAGS       | Set this to a comma separated K:V list to enable custom tags eg. `NAME:TEST,IS_PRODUCTION:false,VERSION:5`
+ APPOPTICS_CUSTOM_TAGS       | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
 
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
