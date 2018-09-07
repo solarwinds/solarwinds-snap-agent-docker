@@ -17,7 +17,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: appoptics-agent-ds
-        image: 'appoptics/appoptics-agent-docker:v0.3'
+        image: 'appoptics/appoptics-agent-docker:v0.4'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN

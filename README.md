@@ -80,6 +80,6 @@ Successful deployments will report metrics in the AppOptics Kubernetes Dashboard
 
 The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/appoptics/appoptics-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by running:
 ```
-docker build -t appoptics/appoptics-agent-docker:v0.3 .
-docker push appoptics/appoptics-agent-docker:v0.3
+docker build -t appoptics/appoptics-agent-docker:v0.4 .
+docker push appoptics/appoptics-agent-docker:v0.4
 ```
