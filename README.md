@@ -44,7 +44,7 @@ If you wanted to run this on Kubernetes as a sidecar for monitoring specific ser
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
 ```
 - name: zookeeper-ao-sidecar
-  image: 'appoptics/appoptics-agent-docker:v0.4'
+  image: 'appoptics/appoptics-agent-docker:v0.x'
   env:
     - name: APPOPTICS_TOKEN
       value: APPOPTICS_TOKEN
@@ -78,8 +78,7 @@ Successful deployments will report metrics in the AppOptics Kubernetes Dashboard
 
 ## Development
 
-The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/appoptics/appoptics-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by running:
+The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/appoptics/appoptics-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by updating the tag in the [Makefile](Makefile) and running:
 ```
-docker build -t appoptics/appoptics-agent-docker:v0.4 .
-docker push appoptics/appoptics-agent-docker:v0.4
+make build-and-release-docker
 ```

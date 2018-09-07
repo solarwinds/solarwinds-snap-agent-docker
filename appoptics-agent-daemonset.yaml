@@ -6,6 +6,8 @@ metadata:
   labels:
     daemon: appoptics-agent-ds
 spec:
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       name: appoptics-agent-ds
@@ -17,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: appoptics-agent-ds
-        image: 'appoptics/appoptics-agent-docker:v0.4'
+        image: 'appoptics/appoptics-agent-docker:v0.5'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN

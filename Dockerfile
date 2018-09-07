@@ -2,7 +2,7 @@ FROM ubuntu:xenial
 
 MAINTAINER Chris Rust <chris.rust@solarwinds.com>
 
-ENV APPOPTICS_SNAPTEL_VERSION='2.0.0-ao1.1475'
+ENV APPOPTICS_SNAPTEL_VERSION='2.0.0-ao1.1849'
 
 USER root
 ENV DEBIAN_FRONTEND noninteractive
