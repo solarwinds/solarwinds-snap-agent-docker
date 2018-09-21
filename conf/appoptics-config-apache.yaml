@@ -1,0 +1,16 @@
+collector:
+  apache:
+    all:
+      apache_mod_status_url: "http://localhost:80/server-status"
+      safe: false
+
+      # grpc_timeout sets the maximum time allowed for a gRPC call.
+      # Some collector or plublisher plugins require more time to finish a gRPC method call during collection or publishing.
+      # When increasing grpc_timeout value with the deadline value specified in
+      # manifest task file which controls the total time allocated for the
+      # Default value is 10
+      grpc_timeout: 30
+
+load:
+  plugin: snap-plugin-collector-aoapache
+  task: task-aoapache.yaml

@@ -19,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: appoptics-agent-ds
-        image: 'appoptics/appoptics-agent-docker:v0.5'
+        image: 'appoptics/appoptics-agent-docker:v0.6'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN
@@ -30,6 +30,10 @@ spec:
                 fieldPath: spec.nodeName
           - name: APPOPTICS_ENABLE_DOCKER
             value: 'true'
+          - name: APPOPTICS_ENABLE_APACHE
+            value: 'false'
+          - name: APPOPTICS_DISABLE_HOSTAGENT
+            value: 'false'
           - name: HOST_PROC
             value: '/host/proc'
         volumeMounts:

@@ -19,8 +19,8 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 ### Deployment
 
 If you're using RBAC on your Kubernetes cluster you'll need to deploy the Service Account first so that the agent can talk to your Kubernetes API:
-```	
-kubectl apply -f appoptics-agent-serviceaccount.yaml	
+```
+kubectl apply -f appoptics-agent-serviceaccount.yaml
 ```
 
 To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `appoptics-agent-deployment.yaml` and run:
@@ -68,6 +68,7 @@ The following environment parameters are available:
  LOG_LEVEL                   | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  APPOPTICS_HOSTNAME          | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  APPOPTICS_ENABLE_DOCKER     | Set this to `true` to enable the Docker plugin.
+ APPOPTICS_ENABLE_APACHE     | Set this to `true` to enable the Apache plugin.
  APPOPTICS_ENABLE_KUBERNETES | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause  replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one.  Typically Kubernetes collection is only enabled on the Deployment asset.
  APPOPTICS_DISABLE_HOSTAGENT | Set this to `true` to disable the Host Agent system metrics collection.
  APPOPTICS_ENABLE_ZOOKEEPER  | Set this to `true` to enable the Zookeeper plugin.
