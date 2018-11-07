@@ -1,8 +1,0 @@
-collector:
-  kubernetes:
-    all:
-      incluster: true
-
-load:
-  plugin: snap-plugin-collector-aokubernetes
-  task: task-aokubernetes.yaml
