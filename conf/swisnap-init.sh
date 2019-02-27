@@ -2,9 +2,9 @@
 # chris.rust@solarwinds.com - 20180227
 set -e
 
-APPOPTICS_HOME='/opt/appoptics/'
-CONFIG_FILE="${APPOPTICS_HOME}/etc/config.yaml"
-TMP_FILE="${APPOPTICS_HOME}/etc/config.yaml.tmp"
+SWISNAP_HOME='/opt/SolarWinds/Snap/'
+CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
+TMP_FILE="${SWISNAP_HOME}/etc/config.yaml.tmp"
 
 # APPOPTICS_TOKEN is required
 if [ -n "${APPOPTICS_TOKEN}" ]; then
@@ -15,7 +15,7 @@ else
     exit 1
 fi
 
-# Translate LOG_LEVEL to snapteld log_level 1-5
+# Translate LOG_LEVEL to swisnapd log_level 1-5
 if [ -n "${LOG_LEVEL}" ]; then
     shopt -s nocasematch           # turn on case-insensitive matching for case stmt
     case $LOG_LEVEL in
@@ -39,32 +39,35 @@ if [ -n "$APPOPTICS_HOSTNAME" ]; then
 fi
 
 # Set to true to enable or disable specific plugins
-PLUGINS_DIR="${APPOPTICS_HOME}/etc/plugins.d/"
-if [ "$APPOPTICS_ENABLE_APACHE" = "true" ]; then
+PLUGINS_DIR="${SWISNAP_HOME}/etc/plugins.d/"
+if [ "$SWISNAP_ENABLE_APACHE" = "true" ]; then
     mv ${PLUGINS_DIR}/apache.yaml.example ${PLUGINS_DIR}/apache.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_DOCKER" = "true" ]; then
+if [ "$SWISNAP_ENABLE_DOCKER" = "true" ]; then
     mv ${PLUGINS_DIR}/docker.yaml.example ${PLUGINS_DIR}/docker.yaml
+    if [[ -n ${HOST_PROC} ]]; then
+        sed -i 's,procfs: "/proc",procfs: "'${HOST_PROC}'",g' ${PLUGINS_DIR}/docker.yaml
+    fi
 fi
 
-if [ "$APPOPTICS_ENABLE_ELASTICSEARCH" = "true" ]; then
+if [ "$SWISNAP_ENABLE_ELASTICSEARCH" = "true" ]; then
     mv ${PLUGINS_DIR}/elasticsearch.yaml.example ${PLUGINS_DIR}/elasticsearch.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_KUBERNETES" = "true" ]; then
+if [ "$SWISNAP_ENABLE_KUBERNETES" = "true" ]; then
     mv ${PLUGINS_DIR}/kubernetes.yaml.example ${PLUGINS_DIR}/kubernetes.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_MESOS" = "true" ]; then
+if [ "$SWISNAP_ENABLE_MESOS" = "true" ]; then
     mv ${PLUGINS_DIR}/mesos.yaml.example ${PLUGINS_DIR}/mesos.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_MONGODB" = "true" ]; then
+if [ "$SWISNAP_ENABLE_MONGODB" = "true" ]; then
     mv ${PLUGINS_DIR}/mongodb.yaml.example ${PLUGINS_DIR}/mongodb.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_MYSQL" = "true" ]; then
+if [ "$SWISNAP_ENABLE_MYSQL" = "true" ]; then
     mv ${PLUGINS_DIR}/mysql.yaml.example ${PLUGINS_DIR}/mysql.yaml
     if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PORT} ]]; then
         cat ${PLUGINS_DIR}/mysql.yaml.example | yq ".collector.mysql.all.mysql_connection_string = \"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\"" > $TMP_FILE
@@ -72,18 +75,18 @@ if [ "$APPOPTICS_ENABLE_MYSQL" = "true" ]; then
      fi
 fi
 
-if [ "$APPOPTICS_ENABLE_RABBITMQ" = "true" ]; then
+if [ "$SWISNAP_ENABLE_RABBITMQ" = "true" ]; then
     mv ${PLUGINS_DIR}/rabbitmq.yaml.example ${PLUGINS_DIR}/rabbitmq.yaml
 fi
 
-if [ "$APPOPTICS_ENABLE_ZOOKEEPER" = "true" ]; then
+if [ "$SWISNAP_ENABLE_ZOOKEEPER" = "true" ]; then
     mv ${PLUGINS_DIR}/zookeeper.yaml.example ${PLUGINS_DIR}/zookeeper.yaml
 fi
 
-if [ "$APPOPTICS_DISABLE_HOSTAGENT" = "true" ]; then
-    rm ${APPOPTICS_HOME}/autoload/snap-plugin-collector-aosystem
-    rm ${APPOPTICS_HOME}/autoload/task-aosystem-warmup.yaml
-    rm ${APPOPTICS_HOME}/autoload/task-aosystem.yaml
+if [ "$SWISNAP_DISABLE_HOSTAGENT" = "true" ]; then
+    rm ${SWISNAP_HOME}/autoload/snap-plugin-collector-aosystem
+    rm ${SWISNAP_HOME}/autoload/task-aosystem-warmup.yaml
+    rm ${SWISNAP_HOME}/autoload/task-aosystem.yaml
 fi
 
 if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
@@ -100,4 +103,4 @@ fi
 # Cleanup $TMP_FILE
 [ -f "$TMP_FILE" ] && rm $TMP_FILE
 
-exec ${APPOPTICS_HOME}/sbin/snapteld --config $CONFIG_FILE
+exec ${SWISNAP_HOME}/sbin/swisnapd --config $CONFIG_FILE

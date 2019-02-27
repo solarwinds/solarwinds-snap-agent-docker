@@ -1,47 +1,47 @@
 kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
-  name: appoptics-agent-k8s
+  name: swisnap-agent-k8s
   namespace: kube-system
   labels:
-    app: appoptics-agent-k8s
+    app: swisnap-agent-k8s
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: appoptics-agent-k8s
+      app: swisnap-agent-k8s
   template:
     metadata:
       labels:
-        app: appoptics-agent-k8s
+        app: swisnap-agent-k8s
     spec:
-      serviceAccountName: appoptics-agent-serviceaccount
+      serviceAccountName: swisnap-agent-serviceaccount
       containers:
-        - name: appoptics-agent-k8s
-          image: 'appoptics/appoptics-agent-docker:v0.7'
+        - name: swisnap-agent-k8s
+          image: 'solarwinds/swisnap-agent-docker:v0.1'
           imagePullPolicy: Always
           env:
             - name: APPOPTICS_TOKEN
               value: 'APPOPTICS_TOKEN'
-            - name: APPOPTICS_ENABLE_APACHE
+            - name: SWISNAP_ENABLE_APACHE
               value: 'false'
-            - name: APPOPTICS_ENABLE_DOCKER
+            - name: SWISNAP_ENABLE_DOCKER
               value: 'false'
-            - name: APPOPTICS_ENABLE_ELASTICSEARCH
+            - name: SWISNAP_ENABLE_ELASTICSEARCH
               value: 'false'
-            - name: APPOPTICS_ENABLE_KUBERNETES
+            - name: SWISNAP_ENABLE_KUBERNETES
               value: 'true'
-            - name: APPOPTICS_ENABLE_MESOS
+            - name: SWISNAP_ENABLE_MESOS
               value: 'false'
-            - name: APPOPTICS_ENABLE_MONGODB
+            - name: SWISNAP_ENABLE_MONGODB
               value: 'false'
-            - name: APPOPTICS_ENABLE_MYSQL
+            - name: SWISNAP_ENABLE_MYSQL
               value: 'false'
-            - name: APPOPTICS_ENABLE_RABBITMQ
+            - name: SWISNAP_ENABLE_RABBITMQ
               value: 'false'
-            - name: APPOPTICS_ENABLE_ZOOKEEPER
+            - name: SWISNAP_ENABLE_ZOOKEEPER
               value: 'false'
-            - name: APPOPTICS_DISABLE_HOSTAGENT
+            - name: SWISNAP_DISABLE_HOSTAGENT
               value: 'true'
           resources:
             limits:
