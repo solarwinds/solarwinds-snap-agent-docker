@@ -2,8 +2,6 @@ FROM ubuntu:xenial
 
 LABEL maintainer='Chris Rust <chris.rust@solarwinds.com>'
 
-ENV APPOPTICS_SNAPTEL_VERSION '2.0.0-ao1.1919'
-
 USER root
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -17,8 +15,7 @@ RUN \
     jq \
     python
 
-# Configure AppOptics Host Agent Ubuntu repo
-COPY ./conf/appoptics-xenial-repo.list /etc/apt/sources.list.d/appoptics-snap.list
+ARG swisnap_repo=swisnap
 
 RUN \
   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
@@ -26,21 +23,21 @@ RUN \
   pip install setuptools wheel && \
   pip install yq && \
   pip uninstall pip -y && \
-  curl -L https://packagecloud.io/AppOptics/appoptics-snap/gpgkey | apt-key add - && \
+  echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ xenial main" > /etc/apt/sources.list.d/swisnap.list && \
+  curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
   apt-get update && \
-  apt-get -y install appoptics-snaptel=${APPOPTICS_SNAPTEL_VERSION} && \
+  apt-get -y install solarwinds-snap-agent && \
   apt-get -y purge curl python && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-  mkdir -p /tmp/appoptics-snaptel \
-           /var/log/appoptics \
-           /var/run/appoptics \
-           /tmp/appoptics-configs
+  mkdir -p /tmp/SolarWinds/Snap \
+           /var/log/SolarWinds/Snap \
+           /var/run/SolarWinds/Snap
 
-COPY ./conf/appoptics-config.yaml /opt/appoptics/etc/config.yaml
-COPY ./conf/appoptics-init.sh /opt/appoptics/etc/init.sh
+COPY ./conf/swisnap-config.yaml /opt/SolarWinds/Snap/etc/config.yaml
+COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 
-WORKDIR /opt/appoptics
+WORKDIR /opt/SolarWinds/Snap
 
-# Run AppOptics Host Agent
-CMD ["/opt/appoptics/etc/init.sh"]
+# Run SolarWinds Snap Agent
+CMD ["/opt/SolarWinds/Snap/etc/init.sh"]

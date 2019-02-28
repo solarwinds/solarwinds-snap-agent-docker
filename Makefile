@@ -1,5 +1,10 @@
-TAG="v0.7"
+TAG="v0.1"
+USER="solarwinds"
+REPOSITORY="swisnap-agent-docker"
 
 build-and-release-docker:
-	@docker build -t appoptics/appoptics-agent-docker:$(TAG) .
-	@docker push appoptics/appoptics-agent-docker:$(TAG)
+	@docker build -t $(USER)/$(REPOSITORY):$(TAG) .
+	@docker push $(USER)/$(REPOSITORY):$(TAG)
+
+build-test-container:
+	@docker build -t $(USER)/$(REPOSITORY):$(TAG) --build-arg swisnap_repo=swisnap-stg .

@@ -1,25 +1,25 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: appoptics-agent-ds
+  name: swisnap-agent-ds
   namespace: kube-system
   labels:
-    daemon: appoptics-agent-ds
+    daemon: swisnap-agent-ds
 spec:
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
-      name: appoptics-agent-ds
+      name: swisnap-agent-ds
       labels:
-        daemon: appoptics-agent-ds
+        daemon: swisnap-agent-ds
     spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
-      - name: appoptics-agent-ds
-        image: 'appoptics/appoptics-agent-docker:v0.7'
+      - name: swisnap-agent-ds
+        image: 'solarwinds/swisnap-agent-docker:v0.1'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN
@@ -28,25 +28,25 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          - name: APPOPTICS_ENABLE_APACHE
+          - name: SWISNAP_ENABLE_APACHE
             value: 'false'
-          - name: APPOPTICS_ENABLE_DOCKER
+          - name: SWISNAP_ENABLE_DOCKER
             value: 'true'
-          - name: APPOPTICS_ENABLE_ELASTICSEARCH
+          - name: SWISNAP_ENABLE_ELASTICSEARCH
             value: 'false'
-          - name: APPOPTICS_ENABLE_KUBERNETES
+          - name: SWISNAP_ENABLE_KUBERNETES
             value: 'false'
-          - name: APPOPTICS_ENABLE_MESOS
+          - name: SWISNAP_ENABLE_MESOS
             value: 'false'
-          - name: APPOPTICS_ENABLE_MONGODB
+          - name: SWISNAP_ENABLE_MONGODB
             value: 'false'
-          - name: APPOPTICS_ENABLE_MYSQL
+          - name: SWISNAP_ENABLE_MYSQL
             value: 'false'
-          - name: APPOPTICS_ENABLE_RABBITMQ
+          - name: SWISNAP_ENABLE_RABBITMQ
             value: 'false'
-          - name: APPOPTICS_ENABLE_ZOOKEEPER
+          - name: SWISNAP_ENABLE_ZOOKEEPER
             value: 'false'
-          - name: APPOPTICS_DISABLE_HOSTAGENT
+          - name: SWISNAP_DISABLE_HOSTAGENT
             value: 'false'
           - name: HOST_PROC
             value: '/host/proc'
