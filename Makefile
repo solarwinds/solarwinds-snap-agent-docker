@@ -1,6 +1,6 @@
 TAG="1.0.0"
 USER="solarwinds"
-REPOSITORY="swisnap-agent-docker"
+REPOSITORY="solarwinds-snap-agent-docker"
 
 build-and-release-docker:
 	@docker build -t $(USER)/$(REPOSITORY):$(TAG) .
