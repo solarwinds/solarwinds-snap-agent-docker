@@ -46,7 +46,7 @@ If you wanted to run this on Kubernetes as a sidecar for monitoring specific ser
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
 ``` yaml
 - name: zookeeper-ao-sidecar
-  image: 'solarwinds/swisnap-agent-docker:v0.x'
+  image: 'solarwinds/solarwinds-snap-agent-docker:x.x.x'
   env:
     - name: APPOPTICS_TOKEN
       value: APPOPTICS_TOKEN
@@ -135,7 +135,7 @@ Successful deployments will report metrics in the AppOptics Kubernetes Dashboard
 
 ## Development
 
-The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/solarwinds/swisnap-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by updating the tag in the [Makefile](Makefile) and running:
+The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/solarwinds/solarwinds-snap-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by updating the tag in the [Makefile](Makefile) and running:
 ```
 make build-and-release-docker
 ```
