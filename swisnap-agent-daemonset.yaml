@@ -19,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: swisnap-agent-ds
-        image: 'solarwinds/swisnap-agent-docker:v0.1'
+        image: 'solarwinds/swisnap-agent-docker:1.0.0'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN
