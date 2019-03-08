@@ -79,6 +79,10 @@ if [ "$SWISNAP_ENABLE_RABBITMQ" = "true" ]; then
     mv ${PLUGINS_DIR}/rabbitmq.yaml.example ${PLUGINS_DIR}/rabbitmq.yaml
 fi
 
+if [ "$SWISNAP_ENABLE_STATSD" = "true" ]; then
+    mv ${PLUGINS_DIR}/statsd.yaml.example ${PLUGINS_DIR}/statsd.yaml
+fi
+
 if [ "$SWISNAP_ENABLE_ZOOKEEPER" = "true" ]; then
     mv ${PLUGINS_DIR}/zookeeper.yaml.example ${PLUGINS_DIR}/zookeeper.yaml
 fi

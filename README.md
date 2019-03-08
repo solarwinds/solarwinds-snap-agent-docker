@@ -41,6 +41,34 @@ Enable the Docker plugin in the AppOptics UI and you should start seeing data tr
 
 ### Sidecar
 
+#### Docker
+
+If you wanted to run containerized SolarWinds Snap Agent with custom taskfiles, you can use following snippets:
+
+```shell
+docker run -d -e APPOPTICS_TOKEN=token \
+           -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
+           --name swisnap-agent
+           solarwinds/solarwinds-snap-agent-docker:1.1.0
+```
+
+or using docker-compose:
+
+```yaml
+version: '3'
+services:
+  swisnap:
+    image: solarwinds/solarwinds-snap-agent-docker:1.1.0
+    hostname: swisnap-agent
+    container_name: swisnap-agent
+    volumes:
+      - /path/to/my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml
+    environment:
+      - APPOPTICS_TOKEN=token
+```
+
+#### Kubernetes
+
 If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below which use Zookeeper as an example.
 
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
@@ -112,9 +140,11 @@ The following environment parameters are available:
 
  Parameter                      | Description
 --------------------------------|---------------------
+ APPOPTICS_CUSTOM_TAGS          | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
  APPOPTICS_TOKEN                | Your AppOptics token. This parameter is required.
- LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
+ LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
+ SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the Host Agent system metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
@@ -122,10 +152,9 @@ The following environment parameters are available:
  SWISNAP_ENABLE_MESOS           | Set this to `true` to enable the Mesos plugin.
  SWISNAP_ENABLE_MONGODB         | Set this to `true` to enable the MongoDB plugin.
  SWISNAP_ENABLE_RABBITMQ        | Set this to `true` to enable the RabbitMQ plugin.
- SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the Host Agent system metrics collection.
+ SWISNAP_ENABLE_STATSD          | Set this to `true` to enable the Statsd plugin.
  SWISNAP_ENABLE_ZOOKEEPER       | Set this to `true` to enable the Zookeeper plugin.
  SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
- APPOPTICS_CUSTOM_TAGS          | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
 
 If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that AppOptics Host Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](###custom-plugins-configuration-and-tasks-manifests).
 
