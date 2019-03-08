@@ -27,6 +27,7 @@ RUN \
   curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
   apt-get update && \
   apt-get -y install solarwinds-snap-agent && \
+  usermod -aG root solarwinds && \
   apt-get -y purge curl python && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \

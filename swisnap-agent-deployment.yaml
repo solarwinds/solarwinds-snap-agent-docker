@@ -18,7 +18,7 @@ spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s
-          image: 'solarwinds/solarwinds-snap-agent-docker:1.0.0'
+          image: 'solarwinds/solarwinds-snap-agent-docker:1.0.1'
           imagePullPolicy: Always
           env:
             - name: APPOPTICS_TOKEN
@@ -38,6 +38,8 @@ spec:
             - name: SWISNAP_ENABLE_MYSQL
               value: 'false'
             - name: SWISNAP_ENABLE_RABBITMQ
+              value: 'false'
+            - name: SWISNAP_ENABLE_STATSD
               value: 'false'
             - name: SWISNAP_ENABLE_ZOOKEEPER
               value: 'false'
