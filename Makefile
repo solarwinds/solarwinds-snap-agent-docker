@@ -1,4 +1,4 @@
-TAG="1.0.1"
+TAG="1.1.0"
 USER="solarwinds"
 REPOSITORY="solarwinds-snap-agent-docker"
 
