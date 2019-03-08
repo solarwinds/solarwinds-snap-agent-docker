@@ -41,6 +41,34 @@ Enable the Docker plugin in the AppOptics UI and you should start seeing data tr
 
 ### Sidecar
 
+#### Docker
+
+If you wanted to run containerized SolarWinds Agent with custom taskfiles, you can use following snippets:
+
+```shell
+docker run -d -e APPOPTICS_TOKEN=token \
+           -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
+           --name swisnap-agent
+           solarwinds/solarwinds-snap-agent-docker:1.1.0
+```
+
+or using docker-compose:
+
+```yaml
+version: '3'
+services:
+  swisnap:
+    image: solarwinds/solarwinds-snap-agent-docker:1.1.0
+    hostname: swisnap-agent
+    container_name: swisnap-agent
+    volumes:
+      - /path/to/my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml
+    environment:
+      - APPOPTICS_TOKEN=token
+```
+
+#### Kubernetes
+
 If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below which use Zookeeper as an example.
 
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
