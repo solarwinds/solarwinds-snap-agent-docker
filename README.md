@@ -43,7 +43,7 @@ Enable the Docker plugin in the AppOptics UI and you should start seeing data tr
 
 #### Docker
 
-If you wanted to run containerized SolarWinds Agent with custom taskfiles, you can use following snippets:
+If you wanted to run containerized SolarWinds Snap Agent with custom taskfiles, you can use following snippets:
 
 ```shell
 docker run -d -e APPOPTICS_TOKEN=token \
