@@ -160,8 +160,8 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 
 ## Events collector
 
-Version 22 of Kubernetes collector allows you to collect cluster events and , together with logs collector push them to Loggly. To enable event collection in your deployment, follow these easy steps:
-* Create `kubernetes.yaml` file, that will configure kubernetes collector. This config should contains `collector.kubernetes.all.events` field with specified filter. Following example config will watch for normal events in default namespace:
+Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To enable event collection in your deployment, follow these easy steps:
+* Create `kubernetes.yaml` file that will configure kubernetes collector. This config should contain `collector.kubernetes.all.events` field with specified filter. Following example config will watch for normal events in default namespace:
   ```yaml
   collector:
     kubernetes:
@@ -209,7 +209,7 @@ Version 22 of Kubernetes collector allows you to collect cluster events and , to
           period: 60
           floor_seconds: 60
   ```
-* Create `logs.yaml` file, that will configure logs collector. Make sure that logs collector will look for `/var/log/SolarWinds/Snap/events.log` file:
+* Create `logs.yaml` file configuring the logs collector. Make sure that logs collector looks for `/var/log/SolarWinds/Snap/events.log` file:
   ```yaml
   collector:
     logs:
