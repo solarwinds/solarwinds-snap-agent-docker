@@ -158,6 +158,99 @@ The following environment parameters are available:
 
 If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that AppOptics Host Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](###custom-plugins-configuration-and-tasks-manifests).
 
+## Events collector
+
+Version 22 of Kubernetes collector allows you to collect cluster events and , together with logs collector push them to Loggly. To enable event collection in your deployment, follow these easy steps:
+* Create `kubernetes.yaml` file, that will configure kubernetes collector. This config should contains `collector.kubernetes.all.events` field with specified filter. Following example config will watch for normal events in default namespace:
+  ```yaml
+  collector:
+    kubernetes:
+      all:
+        incluster: true
+        kubeconfigpath: ""
+        interval: "60s"
+
+        events: |
+          # Embedded YAML (as a multiline string literal)
+          filters:
+          - namespace: default
+            type: normal
+
+        grpc_timeout: 30
+
+  load:
+    plugin: snap-plugin-collector-aokubernetes
+    task: task-aokubernetes.yaml
+  ```
+* If you want to monitor events count in AppOptics, then edit your current `task-aokubernetes.yaml` task manifest so it contains `/kubernetes/events/count` metric in `workflow.collect.metrics` list, and copy it to working directory:
+  ```yaml
+  ---
+  version: 1
+
+  schedule:
+    type: streaming
+
+  deadline: "55s"
+
+  workflow:
+    collect:
+
+      config:
+        /kubernetes:
+          MaxCollectDuration: "2s"
+          MaxMetricsBuffer: 250
+
+      metrics:
+        /kubernetes/events/count: {}
+        /kubernetes/pod/*/*/*/status/phase/Running: {}
+      publish:
+      - plugin_name: publisher-appoptics
+        config:
+          period: 60
+          floor_seconds: 60
+  ```
+* Create `logs.yaml` file, that will configure logs collector. Make sure that logs collector will look for `/var/log/SolarWinds/Snap/events.log` file:
+  ```yaml
+  collector:
+    logs:
+      all:
+        loggly_token: <your loggly token>
+        api_host: "logs-01.loggly.com"
+
+        api_port: 514
+        api_protocol: "tcp"
+
+        connect_timeout: "30s"
+
+        write_timeout: "30s"
+
+        files: |
+          /var/log/SolarWinds/Snap/events.log
+
+        exclude_patterns: |
+          .*self-skip-logs-collector.*
+
+  load:
+    plugin: snap-plugin-collector-logs
+    task: task-logs.yaml
+  ```
+* Copy your current `task-logs.yaml` task manifest to working directory.
+* Once all 4 files are ready (`kubernetes.yaml`, `logs.yaml`, `task-aokubernetes.yaml` and `task-logs.yaml`), create 2 configmaps:
+  ```shell
+  kubectl create configmap plugin-configs --from-file=./logs.yaml --from-file=./kubernetes.yaml --namespace=kube-system
+  kubectl create configmap task-manifests --from-file=./task-logs.yaml --from-file=./task-aokubernetes.yaml --namespace=kube-system
+
+  kubectl describe configmaps -n kube-system plugin-configs task-manifests
+  ```
+* Edit `swisnap-agent-deployment-event-collector.yaml` and insert your `APPOPTICS_TOKEN`
+* Create ServiceAccount and Deployment:
+  ```shell
+  kubectl apply -f swisnap-agent-serviceaccount.yaml
+  kubectl apply -f swisnap-agent-deployment.yaml
+  ```
+* Watch your cluster events in Loggly :)
+
+
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
 <img src="kubernetes-appoptics-dashboard.png" width="400px" align="middle">

@@ -8,7 +8,7 @@ TMP_FILE="${SWISNAP_HOME}/etc/config.yaml.tmp"
 
 # APPOPTICS_TOKEN is required
 if [ -n "${APPOPTICS_TOKEN}" ]; then
-    cat $CONFIG_FILE |  yq ".control.plugins.publisher.\"publisher-appoptics\".all.token = \"$APPOPTICS_TOKEN\"" --yaml-output > $TMP_FILE
+    cat $CONFIG_FILE | yq ".control.plugins.publisher.\"publisher-appoptics\".all.token = \"$APPOPTICS_TOKEN\"" --yaml-output >$TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 else
     echo "Please set APPOPTICS_TOKEN."
@@ -17,24 +17,24 @@ fi
 
 # Translate LOG_LEVEL to swisnapd log_level 1-5
 if [ -n "${LOG_LEVEL}" ]; then
-    shopt -s nocasematch           # turn on case-insensitive matching for case stmt
+    shopt -s nocasematch # turn on case-insensitive matching for case stmt
     case $LOG_LEVEL in
-        debug) loglevel=1;;
-        info) loglevel=2;;
-        warn|warning) loglevel=3;;
-        error) loglevel=4;;
-        fatal) loglevel=5;;
-        *) loglevel=3;;
+    debug) loglevel=1 ;;
+    info) loglevel=2 ;;
+    warn | warning) loglevel=3 ;;
+    error) loglevel=4 ;;
+    fatal) loglevel=5 ;;
+    *) loglevel=3 ;;
     esac
     shopt -u nocasematch
     echo
-    cat $CONFIG_FILE |  yq ".log_level = ${loglevel}" --yaml-output > $TMP_FILE
+    cat $CONFIG_FILE | yq ".log_level = ${loglevel}" --yaml-output >$TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 fi
 
 # Use APPOPTICS_HOSTNAME as hostname_alias
 if [ -n "$APPOPTICS_HOSTNAME" ]; then
-    cat $CONFIG_FILE |  yq ".control.plugins.publisher.\"publisher-appoptics\".all.hostname_alias = \"${APPOPTICS_HOSTNAME}\"" --yaml-output > $TMP_FILE
+    cat $CONFIG_FILE | yq ".control.plugins.publisher.\"publisher-appoptics\".all.hostname_alias = \"${APPOPTICS_HOSTNAME}\"" --yaml-output >$TMP_FILE
     cp $TMP_FILE $CONFIG_FILE
 fi
 
@@ -70,9 +70,9 @@ fi
 if [ "$SWISNAP_ENABLE_MYSQL" = "true" ]; then
     mv ${PLUGINS_DIR}/mysql.yaml.example ${PLUGINS_DIR}/mysql.yaml
     if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PORT} ]]; then
-        cat ${PLUGINS_DIR}/mysql.yaml.example | yq ".collector.mysql.all.mysql_connection_string = \"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\"" > $TMP_FILE
+        cat ${PLUGINS_DIR}/mysql.yaml.example | yq ".collector.mysql.all.mysql_connection_string = \"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\"" >$TMP_FILE
         cp $TMP_FILE $CONFIG_FILE
-     fi
+    fi
 fi
 
 if [ "$SWISNAP_ENABLE_RABBITMQ" = "true" ]; then
@@ -95,12 +95,11 @@ fi
 
 if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
     IFS=","
-    for TAG in $APPOPTICS_CUSTOM_TAGS
-    do
-       KEY=${TAG%%=*}
-       VALUE=${TAG##*=}
-       cat $CONFIG_FILE | yq ".control.tags.\"/\"[\"${KEY}\"] = \"${VALUE}\"" --yaml-output > $TMP_FILE
-       cp $TMP_FILE $CONFIG_FILE
+    for TAG in $APPOPTICS_CUSTOM_TAGS; do
+        KEY=${TAG%%=*}
+        VALUE=${TAG##*=}
+        cat $CONFIG_FILE | yq ".control.tags.\"/\"[\"${KEY}\"] = \"${VALUE}\"" --yaml-output >$TMP_FILE
+        cp $TMP_FILE $CONFIG_FILE
     done
 fi
 

@@ -1,25 +1,30 @@
 kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
-  name: swisnap-agent-k8s
+  name: swisnap-agent-k8s-event-collector
   namespace: kube-system
   labels:
-    app: swisnap-agent-k8s
+    app: swisnap-agent-k8s-event-collctor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: swisnap-agent-k8s
+      app: swisnap-agent-k8s-event-collector
   template:
     metadata:
       labels:
-        app: swisnap-agent-k8s
+        app: swisnap-agent-k8s-event-collector
     spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
-        - name: swisnap-agent-k8s
+        - name: swisnap-agent-k8s-event-collector
           image: 'solarwinds/solarwinds-snap-agent-docker:1.2.0'
           imagePullPolicy: Always
+          volumeMounts:
+            - name: plugins-vol
+              mountPath: /opt/SolarWinds/Snap/etc/plugins.d
+            - name: tasks-vol
+              mountPath: /opt/SolarWinds/Snap/etc/tasks.d
           env:
             - name: APPOPTICS_TOKEN
               value: 'APPOPTICS_TOKEN'
@@ -29,8 +34,8 @@ spec:
               value: 'false'
             - name: SWISNAP_ENABLE_ELASTICSEARCH
               value: 'false'
-            - name: SWISNAP_ENABLE_KUBERNETES
-              value: 'true'
+            - name: SWISNAP_ENABLE_KUBERNETES # turn off default plugin configuration
+              value: 'false'
             - name: SWISNAP_ENABLE_MESOS
               value: 'false'
             - name: SWISNAP_ENABLE_MONGODB
@@ -52,6 +57,23 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+      volumes:
+        - name: plugins-vol
+          configMap:
+            name: plugin-configs
+            items:
+              - key: kubernetes.yaml
+                path: kubernetes.yaml
+              - key: logs.yaml
+                path: logs.yaml
+        - name: tasks-vol
+          configMap:
+            name: task-manifests
+            items:
+              - key: task-aokubernetes.yaml
+                path: task-aokubernetes.yaml
+              - key: task-logs.yaml
+                path: task-logs.yaml
   strategy:
     type: RollingUpdate
     rollingUpdate:
