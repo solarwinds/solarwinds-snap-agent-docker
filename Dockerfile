@@ -1,6 +1,6 @@
 FROM ubuntu:xenial
 
-LABEL maintainer='Chris Rust <chris.rust@solarwinds.com>'
+LABEL authors='Chris Rust <chris.rust@solarwinds.com>, Dawid Śmiech <dawid.smiech@solarwinds.com>'
 
 USER root
 ENV DEBIAN_FRONTEND noninteractive
