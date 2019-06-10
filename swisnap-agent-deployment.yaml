@@ -18,11 +18,11 @@ spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s
-          image: 'dsmiech/solarwinds-snap-agent-docker:1.3.0-2.6.0.398'
+          image: 'solarwinds/solarwinds-snap-agent-docker:1.3.0-2.6.0.398'
           imagePullPolicy: Always
           env:
             - name: APPOPTICS_TOKEN
-              value: 'dupa'
+              value: 'APPOPTICS_TOKEN'
             - name: SWISNAP_ENABLE_APACHE
               value: 'false'
             - name: SWISNAP_ENABLE_DOCKER
