@@ -8,34 +8,25 @@ TMP_FILE="${SWISNAP_HOME}/etc/config.yaml.tmp"
 
 # APPOPTICS_TOKEN is required
 if [ -n "${APPOPTICS_TOKEN}" ]; then
-    cat $CONFIG_FILE | yq ".control.plugins.publisher.\"publisher-appoptics\".all.token = \"$APPOPTICS_TOKEN\"" --yaml-output >$TMP_FILE
-    cp $TMP_FILE $CONFIG_FILE
+    yq w -i $CONFIG_FILE control.plugins.publisher.publisher-appoptics.all.token "\"$APPOPTICS_TOKEN\""
+    yq w -i $CONFIG_FILE control.plugins.publisher.publisher-processes.all.token "\"$APPOPTICS_TOKEN\""
 else
     echo "Please set APPOPTICS_TOKEN."
     exit 1
 fi
 
-# Translate LOG_LEVEL to swisnapd log_level 1-5
 if [ -n "${LOG_LEVEL}" ]; then
-    shopt -s nocasematch # turn on case-insensitive matching for case stmt
-    case $LOG_LEVEL in
-    debug) loglevel=1 ;;
-    info) loglevel=2 ;;
-    warn | warning) loglevel=3 ;;
-    error) loglevel=4 ;;
-    fatal) loglevel=5 ;;
-    *) loglevel=3 ;;
-    esac
-    shopt -u nocasematch
-    echo
-    cat $CONFIG_FILE | yq ".log_level = ${loglevel}" --yaml-output >$TMP_FILE
-    cp $TMP_FILE $CONFIG_FILE
+    yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
+fi
+
+if [ "${SWISNAP_SECURE}" = true ]; then
+    yq w -i $CONFIG_FILE control.plugin_trust_level 1
+    FLAGS="--keyring-paths ${SWISNAP_HOME}/.gnupg/"
 fi
 
 # Use APPOPTICS_HOSTNAME as hostname_alias
 if [ -n "$APPOPTICS_HOSTNAME" ]; then
-    cat $CONFIG_FILE | yq ".control.plugins.publisher.\"publisher-appoptics\".all.hostname_alias = \"${APPOPTICS_HOSTNAME}\"" --yaml-output >$TMP_FILE
-    cp $TMP_FILE $CONFIG_FILE
+    yq w -i $CONFIG_FILE control.plugins.publisher.publisher-appoptics.all.hostname_alias "\"${APPOPTICS_HOSTNAME}\""
 fi
 
 # Set to true to enable or disable specific plugins
@@ -70,8 +61,7 @@ fi
 if [ "$SWISNAP_ENABLE_MYSQL" = "true" ]; then
     mv ${PLUGINS_DIR}/mysql.yaml.example ${PLUGINS_DIR}/mysql.yaml
     if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PORT} ]]; then
-        cat ${PLUGINS_DIR}/mysql.yaml.example | yq ".collector.mysql.all.mysql_connection_string = \"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\"" >$TMP_FILE
-        cp $TMP_FILE $CONFIG_FILE
+        yq w -i ${PLUGINS_DIR}/mysql.yaml.example collector.mysql.all.mysql_connection_string  "\"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\""
     fi
 fi
 
@@ -93,17 +83,21 @@ if [ "$SWISNAP_DISABLE_HOSTAGENT" = "true" ]; then
     rm ${SWISNAP_HOME}/autoload/task-aosystem.yaml
 fi
 
+if [ "$SWISNAP_DISABLE_PROCESSES" = "true" ]; then
+    rm ${SWISNAP_HOME}/autoload/snap-plugin-publisher-processes
+    rm ${SWISNAP_HOME}/etc/plugins.d/processes.yaml
+fi
+
 if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
     IFS=","
     for TAG in $APPOPTICS_CUSTOM_TAGS; do
         KEY=${TAG%%=*}
         VALUE=${TAG##*=}
-        cat $CONFIG_FILE | yq ".control.tags.\"/\"[\"${KEY}\"] = \"${VALUE}\"" --yaml-output >$TMP_FILE
-        cp $TMP_FILE $CONFIG_FILE
+        yq w -i $CONFIG_FILE  "control.tags.\"/\"[\"${KEY}\"]" "\"${VALUE}\""
     done
 fi
 
 # Cleanup $TMP_FILE
 [ -f "$TMP_FILE" ] && rm $TMP_FILE
 
-exec ${SWISNAP_HOME}/sbin/swisnapd --config $CONFIG_FILE
+exec ${SWISNAP_HOME}/sbin/swisnapd --config $CONFIG_FILE $FLAGS

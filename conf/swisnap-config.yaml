@@ -1,8 +1,8 @@
 ---
 # log_level for the Snap daemon. Supported values are
-# 1 - Debug, 2 - Info, 3 - Warning, 4 - Error, 5 - Fatal.
-# Default value is 3.
-#log_level: 3
+# trace, debug, info, warning, error, fatal, panic
+# Default value is warning
+#log_level: debug
 log_format: text
 
 control:
@@ -76,6 +76,11 @@ control:
           # ec2_check_timeout allows to configure timeout for querying EC2 instance metadata URL to determine if host agent
           # is running on EC2 (or OpenStack) instance. By default it is set to 1s.
           # ec2_check_timeout: "1s"
+
+      publisher-processes:
+        all:
+          token: APPOPTICS_TOKEN
+          url: "https://api.appoptics.com/v1/agent/report"
 
     collector:
       aosystem:

@@ -7,28 +7,25 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN \
   apt-get update && \
+  apt-get -y install software-properties-common && \
+  LC_ALL=C.UTF-8 add-apt-repository -y ppa:rmescandon/yq && \
+  apt-get update && \
   apt-get -y upgrade && \
   apt-get -y install \
     apt-transport-https \
     ca-certificates \
     curl \
-    jq \
-    python
+    yq
 
 ARG swisnap_repo=swisnap
 
 RUN \
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-  python get-pip.py && \
-  pip install setuptools wheel && \
-  pip install yq && \
-  pip uninstall pip -y && \
   echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ xenial main" > /etc/apt/sources.list.d/swisnap.list && \
   curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
   apt-get update && \
   apt-get -y install solarwinds-snap-agent && \
   usermod -aG root solarwinds && \
-  apt-get -y purge curl python && \
+  apt-get -y purge curl && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
   mkdir -p /tmp/SolarWinds/Snap \

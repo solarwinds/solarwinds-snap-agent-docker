@@ -18,7 +18,7 @@ spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s-event-collector
-          image: 'solarwinds/solarwinds-snap-agent-docker:1.2.0'
+          image: 'solarwinds/solarwinds-snap-agent-docker:1.3.0-2.6.0.398'
           imagePullPolicy: Always
           volumeMounts:
             - name: plugins-vol
@@ -50,6 +50,10 @@ spec:
               value: 'false'
             - name: SWISNAP_DISABLE_HOSTAGENT
               value: 'true'
+            - name: SWISNAP_DISABLE_PROCESSES
+              value: 'true'
+            - name: SWISNAP_SECURE
+              value: 'false'
           resources:
             limits:
               cpu: 100m

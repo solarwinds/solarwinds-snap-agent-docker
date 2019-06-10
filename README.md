@@ -144,7 +144,9 @@ The following environment parameters are available:
  APPOPTICS_TOKEN                | Your AppOptics token. This parameter is required.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
+ SWISNAP_SECURE                 | Set this to `true` to run only signed plugins
  SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the Host Agent system metrics collection.
+ SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the Host Agent processes metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.

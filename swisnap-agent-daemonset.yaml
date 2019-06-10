@@ -19,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: swisnap-agent-ds
-        image: 'solarwinds/solarwinds-snap-agent-docker:1.2.0'
+        image: 'solarwinds/solarwinds-snap-agent-docker:1.3.0-2.6.0.398'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_TOKEN
@@ -49,6 +49,10 @@ spec:
           - name: SWISNAP_ENABLE_ZOOKEEPER
             value: 'false'
           - name: SWISNAP_DISABLE_HOSTAGENT
+            value: 'false'
+          - name: SWISNAP_DISABLE_PROCESSES
+            value: 'false'
+          - name: SWISNAP_SECURE
             value: 'false'
           - name: HOST_PROC
             value: '/host/proc'
