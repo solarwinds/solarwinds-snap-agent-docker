@@ -61,7 +61,7 @@ fi
 if [ "$SWISNAP_ENABLE_MYSQL" = "true" ]; then
     mv ${PLUGINS_DIR}/mysql.yaml.example ${PLUGINS_DIR}/mysql.yaml
     if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PORT} ]]; then
-        yq w -i ${PLUGINS_DIR}/mysql.yaml.example collector.mysql.all.mysql_connection_string  "\"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\""
+        yq w -i ${PLUGINS_DIR}/mysql.yaml collector.mysql.all.mysql_connection_string "\"$MYSQL_USER:$MYSQL_PASS@tcp($MYSQL_HOST:$MYSQL_PORT)\/\""
     fi
 fi
 
@@ -93,7 +93,7 @@ if [ -n "$APPOPTICS_CUSTOM_TAGS" ]; then
     for TAG in $APPOPTICS_CUSTOM_TAGS; do
         KEY=${TAG%%=*}
         VALUE=${TAG##*=}
-        yq w -i $CONFIG_FILE  "control.tags.\"/\"[\"${KEY}\"]" "\"${VALUE}\""
+        yq w -i $CONFIG_FILE "control.tags.\"/\"[\"${KEY}\"]" "\"${VALUE}\""
     done
 fi
 
