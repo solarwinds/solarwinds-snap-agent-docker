@@ -2,6 +2,9 @@ FROM ubuntu:xenial
 
 LABEL authors='Chris Rust <chris.rust@solarwinds.com>, Dawid Śmiech <dawid.smiech@solarwinds.com>'
 
+ARG swisnap_version
+ARG swisnap_repo=swisnap
+
 USER root
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -17,13 +20,11 @@ RUN \
     curl \
     yq
 
-ARG swisnap_repo=swisnap
-
 RUN \
   echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ xenial main" > /etc/apt/sources.list.d/swisnap.list && \
   curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
   apt-get update && \
-  apt-get -y install solarwinds-snap-agent && \
+  apt-get -y install solarwinds-snap-agent=${swisnap_version} && \
   usermod -aG root solarwinds && \
   apt-get -y purge curl && \
   apt-get clean && \
@@ -32,7 +33,6 @@ RUN \
            /var/log/SolarWinds/Snap \
            /var/run/SolarWinds/Snap
 
-COPY ./conf/swisnap-config.yaml /opt/SolarWinds/Snap/etc/config.yaml
 COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 
 WORKDIR /opt/SolarWinds/Snap
