@@ -4,8 +4,6 @@ set -e
 
 SWISNAP_HOME='/opt/SolarWinds/Snap/'
 CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
-APPOPTICS_URL="https://api.appoptics.com/v1/measurements"
-APPOPTICS_REPORT_URL="https://api.appoptics.com/v1/agent/report"
 
 swisnap_config_setup() {
     # APPOPTICS_TOKEN is required
@@ -18,8 +16,6 @@ swisnap_config_setup() {
     fi
 
     yq d -i ${CONFIG_FILE} log_path
-    yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-appoptics.all.url "${APPOPTICS_URL}"
-    yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-processes.all.url "${APPOPTICS_REPORT_URL}"
 
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
