@@ -5,7 +5,7 @@ USER="solarwinds"
 REPOSITORY="solarwinds-snap-agent-docker"
 
 build-and-release-docker:
-	@docker build -t $(USER)/$(REPOSITORY):$(TAG) .
+	@docker build -t $(USER)/$(REPOSITORY):$(TAG) --build-arg swisnap_version=$(SWISNAP_VERSION) .
 	@docker push $(USER)/$(REPOSITORY):$(TAG)
 
 test:
