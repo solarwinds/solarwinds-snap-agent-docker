@@ -89,7 +89,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_DISABLE_PROCESSES}" = "true" ]; then
         rm ${SWISNAP_HOME}/autoload/snap-plugin-publisher-processes
-        rm ${SWISNAP_HOME}/etc/plugins.d/processes.yaml
+        rm ${SWISNAP_HOME}/autoload/task-processes.yaml
     fi
 }
 
