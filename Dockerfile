@@ -17,6 +17,7 @@ RUN \
   apt-get -y install \
     apt-transport-https \
     ca-certificates \
+    docker.io \
     curl \
     yq
 

@@ -32,7 +32,7 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 ### DaemonSet
 
-To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `swisnap-agent-daemonset.yaml` and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `swisnap-agent-daemonset.yaml` and run:
 ``` bash
 kubectl apply -f swisnap-agent-daemonset.yaml
 ```
