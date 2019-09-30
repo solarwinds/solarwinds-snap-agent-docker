@@ -23,8 +23,9 @@ If you're using RBAC on your Kubernetes cluster you'll need to deploy the Servic
 kubectl apply -f swisnap-agent-serviceaccount.yaml
 ```
 
-To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `swisnap-agent-deployment.yaml` and run:
+To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `configmaps/appoptics-token.yaml` with your token encoded with **base64** and run:
 ``` bash
+kubectl create -f configmaps/appoptics-token.yaml -f configmaps/deployment.yaml
 kubectl apply -f swisnap-agent-deployment.yaml
 ```
 
@@ -32,8 +33,9 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 ### DaemonSet
 
-The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `swisnap-agent-daemonset.yaml` and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `configmaps/appoptics-token.yaml` with your token encoded with **base64** and run:
 ``` bash
+kubectl create -f configmaps/appoptics-token.yaml -f configmaps/daemonset.yaml
 kubectl apply -f swisnap-agent-daemonset.yaml
 ```
 
@@ -244,10 +246,11 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
 
   kubectl describe configmaps -n kube-system plugin-configs task-manifests
   ```
-* Edit `swisnap-agent-deployment-event-collector.yaml` and insert your `APPOPTICS_TOKEN`
+* Edit `configmaps/appoptics-token.yaml` and insert your `APPOPTICS_TOKEN` encoded with **base64**.
 * Create ServiceAccount and Deployment:
   ```shell
   kubectl apply -f swisnap-agent-serviceaccount.yaml
+  kubectl create -f configmaps/appoptics-token.yaml -f configmaps/deployment.yaml
   kubectl apply -f swisnap-agent-deployment.yaml
   ```
 * Watch your cluster events in Loggly :)

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: swisnap-agent-k8s-configmap
+  namespace: kube-system
+data:
+  SWISNAP_ENABLE_APACHE: 'false'
+  SWISNAP_ENABLE_DOCKER: 'false'
+  SWISNAP_ENABLE_ELASTICSEARCH: 'false'
+  SWISNAP_ENABLE_KUBERNETES: 'true'
+  SWISNAP_ENABLE_MESOS: 'false'
+  SWISNAP_ENABLE_MONGODB: 'false'
+  SWISNAP_ENABLE_MYSQL: 'false'
+  SWISNAP_ENABLE_RABBITMQ: 'false'
+  SWISNAP_ENABLE_STATSD: 'false'
+  SWISNAP_ENABLE_ZOOKEEPER: 'false'
+  SWISNAP_DISABLE_HOSTAGENT: 'true'
+  SWISNAP_DISABLE_PROCESSES: 'true'
+  SWISNAP_SECURE: 'false'
