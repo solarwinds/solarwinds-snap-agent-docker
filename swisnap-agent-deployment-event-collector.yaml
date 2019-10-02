@@ -28,7 +28,7 @@ spec:
           env:
             - name: APPOPTICS_TOKEN
               valueFrom:
-                secretKeyRef:
+                configMapKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
             - name: SWISNAP_ENABLE_KUBERNETES # turn off default plugin configuration
