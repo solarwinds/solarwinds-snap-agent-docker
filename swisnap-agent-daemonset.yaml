@@ -19,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: swisnap-agent-ds
-        image: 'solarwinds/solarwinds-snap-agent-docker:latest'
+        image: 'dsmiech/solarwinds-snap-agent-docker:latest'
         imagePullPolicy: Always
         env:
           - name: APPOPTICS_HOSTNAME
@@ -28,7 +28,7 @@ spec:
                 fieldPath: spec.nodeName
           - name: APPOPTICS_TOKEN
             valueFrom:
-              secretKeyRef:
+              configMapKeyRef:
                 name: appoptics-token
                 key: APPOPTICS_TOKEN
         envFrom:
