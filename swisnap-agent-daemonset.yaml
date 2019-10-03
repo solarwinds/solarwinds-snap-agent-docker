@@ -19,43 +19,21 @@ spec:
         effect: NoSchedule
       containers:
       - name: swisnap-agent-ds
-        image: 'solarwinds/solarwinds-snap-agent-docker:2.0.0-2.6.4.217'
+        image: 'solarwinds/solarwinds-snap-agent-docker:latest'
         imagePullPolicy: Always
         env:
-          - name: APPOPTICS_TOKEN
-            value: 'APPOPTICS_TOKEN'
           - name: APPOPTICS_HOSTNAME
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          - name: SWISNAP_ENABLE_APACHE
-            value: 'false'
-          - name: SWISNAP_ENABLE_DOCKER
-            value: 'true'
-          - name: SWISNAP_ENABLE_ELASTICSEARCH
-            value: 'false'
-          - name: SWISNAP_ENABLE_KUBERNETES
-            value: 'false'
-          - name: SWISNAP_ENABLE_MESOS
-            value: 'false'
-          - name: SWISNAP_ENABLE_MONGODB
-            value: 'false'
-          - name: SWISNAP_ENABLE_MYSQL
-            value: 'false'
-          - name: SWISNAP_ENABLE_RABBITMQ
-            value: 'false'
-          - name: SWISNAP_ENABLE_STATSD
-            value: 'false'
-          - name: SWISNAP_ENABLE_ZOOKEEPER
-            value: 'false'
-          - name: SWISNAP_DISABLE_HOSTAGENT
-            value: 'false'
-          - name: SWISNAP_DISABLE_PROCESSES
-            value: 'false'
-          - name: SWISNAP_SECURE
-            value: 'false'
-          - name: HOST_PROC
-            value: '/host/proc'
+          - name: APPOPTICS_TOKEN
+            valueFrom:
+              configMapKeyRef:
+                name: appoptics-token
+                key: APPOPTICS_TOKEN
+        envFrom:
+          - configMapRef:
+              name: swisnap-agent-ds-configmap
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
@@ -64,6 +42,18 @@ spec:
             readOnly: true
           - name: cgroup
             mountPath: /sys/fs/cgroup
+        livenessProbe:
+          httpGet:
+            path: /v1/plugins
+            port: 21413
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /v1/plugins
+            port: 21413
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
       volumes:
         - name: docker-sock
           hostPath:
@@ -74,3 +64,6 @@ spec:
         - name: cgroup
           hostPath:
             path: /sys/fs/cgroup
+        - name: swisnap-agent-ds-configmap
+          configMap:
+            name: swisnap-agent-ds-configmap

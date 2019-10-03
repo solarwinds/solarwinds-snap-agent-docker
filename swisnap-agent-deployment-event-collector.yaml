@@ -4,7 +4,7 @@ metadata:
   name: swisnap-agent-k8s-event-collector
   namespace: kube-system
   labels:
-    app: swisnap-agent-k8s-event-collctor
+    app: swisnap-agent-k8s-event-collector
 spec:
   replicas: 1
   selector:
@@ -18,7 +18,7 @@ spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s-event-collector
-          image: 'solarwinds/solarwinds-snap-agent-docker:2.0.0-2.6.4.217'
+          image: 'solarwinds/solarwinds-snap-agent-docker:latest'
           imagePullPolicy: Always
           volumeMounts:
             - name: plugins-vol
@@ -27,33 +27,15 @@ spec:
               mountPath: /opt/SolarWinds/Snap/etc/tasks.d
           env:
             - name: APPOPTICS_TOKEN
-              value: 'APPOPTICS_TOKEN'
-            - name: SWISNAP_ENABLE_APACHE
-              value: 'false'
-            - name: SWISNAP_ENABLE_DOCKER
-              value: 'false'
-            - name: SWISNAP_ENABLE_ELASTICSEARCH
-              value: 'false'
+              valueFrom:
+                configMapKeyRef:
+                  name: appoptics-token
+                  key: APPOPTICS_TOKEN
             - name: SWISNAP_ENABLE_KUBERNETES # turn off default plugin configuration
               value: 'false'
-            - name: SWISNAP_ENABLE_MESOS
-              value: 'false'
-            - name: SWISNAP_ENABLE_MONGODB
-              value: 'false'
-            - name: SWISNAP_ENABLE_MYSQL
-              value: 'false'
-            - name: SWISNAP_ENABLE_RABBITMQ
-              value: 'false'
-            - name: SWISNAP_ENABLE_STATSD
-              value: 'false'
-            - name: SWISNAP_ENABLE_ZOOKEEPER
-              value: 'false'
-            - name: SWISNAP_DISABLE_HOSTAGENT
-              value: 'true'
-            - name: SWISNAP_DISABLE_PROCESSES
-              value: 'true'
-            - name: SWISNAP_SECURE
-              value: 'false'
+          envFrom:
+            - configMapRef:
+                name: swisnap-agent-k8s-configmap
           resources:
             limits:
               cpu: 100m
@@ -61,6 +43,18 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
       volumes:
         - name: plugins-vol
           configMap:

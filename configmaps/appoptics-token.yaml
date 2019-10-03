@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: appoptics-token
+  namespace: kube-system
+data:
+  APPOPTICS_TOKEN: 'APPOPTICS_TOKEN'
