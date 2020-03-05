@@ -11,8 +11,8 @@ swisnap_config_setup() {
         echo "Please set APPOPTICS_TOKEN."
         exit 1
     else
-        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-appoptics.all.token "\"${APPOPTICS_TOKEN}\""
-        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-processes.all.token "\"${APPOPTICS_TOKEN}\""
+        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-appoptics.all.token ${APPOPTICS_TOKEN}
+        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-processes.all.token ${APPOPTICS_TOKEN}
     fi
 
     yq d -i ${CONFIG_FILE} log_path
@@ -28,7 +28,7 @@ swisnap_config_setup() {
 
     # Use APPOPTICS_HOSTNAME as hostname_alias
     if [ -n "${APPOPTICS_HOSTNAME}" ]; then
-        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-appoptics.all.hostname_alias "\"${APPOPTICS_HOSTNAME}\""
+        yq w -i ${CONFIG_FILE} control.plugins.publisher.publisher-appoptics.all.hostname_alias ${APPOPTICS_HOSTNAME}
     fi
 }
 
