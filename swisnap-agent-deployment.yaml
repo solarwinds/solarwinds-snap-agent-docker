@@ -1,5 +1,5 @@
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: swisnap-agent-k8s
   namespace: kube-system
