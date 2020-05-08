@@ -16,6 +16,7 @@ swisnap_config_setup() {
     fi
 
     yq d -i ${CONFIG_FILE} log_path
+    yq w -i ${CONFIG_FILE} restapi.addr 0.0.0.0
 
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
