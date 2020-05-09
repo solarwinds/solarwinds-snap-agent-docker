@@ -2,7 +2,6 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: swisnap-agent-k8s
-  namespace: kube-system
   labels:
     app: swisnap-agent-k8s
 spec:
@@ -18,17 +17,58 @@ spec:
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s
-          image: 'solarwinds/solarwinds-snap-agent-docker:latest'
-          imagePullPolicy: Always
+          image: solarwinds/solarwinds-snap-agent-docker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - name: probe
+            containerPort: 21413
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
           env:
             - name: APPOPTICS_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
-          envFrom:
-            - configMapRef:
-                name: swisnap-agent-k8s-configmap
+            - name: LOG_LEVEL
+              value: "WARN"
+            - name: SWISNAP_ENABLE_APACHE
+              value: "false"
+            - name: SWISNAP_ENABLE_DOCKER
+              value: "false"
+            - name: SWISNAP_ENABLE_ELASTICSEARCH
+              value: "false"
+            - name: SWISNAP_ENABLE_KUBERNETES
+              value: "true"
+            - name: SWISNAP_ENABLE_MESOS
+              value: "false"
+            - name: SWISNAP_ENABLE_MONGODB
+              value: "false"
+            - name: SWISNAP_ENABLE_MYSQL
+              value: "false"
+            - name: SWISNAP_ENABLE_RABBITMQ
+              value: "false"
+            - name: SWISNAP_ENABLE_STATSD
+              value: "false"
+            - name: SWISNAP_ENABLE_ZOOKEEPER
+              value: "false"
+            - name: SWISNAP_DISABLE_HOSTAGENT
+              value: "true"
+            - name: SWISNAP_DISABLE_PROCESSES
+              value: "true"
+            - name: SWISNAP_SECURE
+              value: "false" 
           resources:
             limits:
               cpu: 100m
@@ -36,18 +76,6 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          livenessProbe:
-            httpGet:
-              path: /v1/plugins
-              port: 21413
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
-          readinessProbe:
-            httpGet:
-              path: /v1/plugins
-              port: 21413
-            initialDelaySeconds: 5
-            timeoutSeconds: 5
   strategy:
     type: RollingUpdate
     rollingUpdate:

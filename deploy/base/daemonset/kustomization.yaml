@@ -9,22 +9,3 @@ commonLabels:
 
 resources:
   - swisnap-agent-daemonset.yaml
-
-configMapGenerator:
-  - name: swisnap-agent-ds-configmap
-    behavior: create
-    literals:
-      - SWISNAP_ENABLE_APACHE='false'
-      - SWISNAP_ENABLE_DOCKER='true'
-      - SWISNAP_ENABLE_ELASTICSEARCH='false'
-      - SWISNAP_ENABLE_KUBERNETES='false'
-      - SWISNAP_ENABLE_MESOS='false'
-      - SWISNAP_ENABLE_MONGODB='false'
-      - SWISNAP_ENABLE_MYSQL='false'
-      - SWISNAP_ENABLE_RABBITMQ='false'
-      - SWISNAP_ENABLE_STATSD='false'
-      - SWISNAP_ENABLE_ZOOKEEPER='false'
-      - SWISNAP_DISABLE_HOSTAGENT='false'
-      - SWISNAP_DISABLE_PROCESSES='false'
-      - SWISNAP_SECURE='false'
-      - HOST_PROC='/host/proc'
