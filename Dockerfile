@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
   && apt-get update \
   && apt-get install -y yq
 
-ARG swisnap_version=2.7.5.577
+ARG swisnap_version
 RUN apt-get update \
   && apt-get -y install solarwinds-snap-agent=${swisnap_version} \
   && rm -rf /var/lib/apt/lists/* \
