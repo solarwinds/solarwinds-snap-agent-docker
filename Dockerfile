@@ -30,8 +30,8 @@ RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ xenial 
            /var/log/SolarWinds/Snap \
            /var/run/SolarWinds/Snap
 
-WORKDIR /opt/SolarWinds/Snap
 COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
+WORKDIR /opt/SolarWinds/Snap
 
 EXPOSE 21413
 
