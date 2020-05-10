@@ -2,6 +2,7 @@ FROM ubuntu:bionic
 
 LABEL authors='Dawid Śmiech <dawid.smiech@solarwinds.com>'
 
+USER root
 ENV DEBIAN_FRONTEND noninteractive
 
 ARG swisnap_repo=swisnap
