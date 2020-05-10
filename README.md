@@ -27,7 +27,7 @@ kubectl create secret generic appoptics-token -n kube-system --from-literal=APPO
 By default, RBAC is enabled in the deploy manifests.  If you are not using RBAC you can deploy [swisnap-agent-daemonset.yaml](deploy/base/daemonset/swisnap-agent-daemonset.yaml) removing the reference to the Service Account.
 
 
-To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created an run:
+To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
 kubectl apply -k ./deploy/base/deployment/
 ```
