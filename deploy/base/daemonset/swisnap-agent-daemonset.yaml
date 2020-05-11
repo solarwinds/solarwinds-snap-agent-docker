@@ -37,32 +37,9 @@ spec:
               secretKeyRef:
                 name: appoptics-token
                 key: APPOPTICS_TOKEN
-          - name: SWISNAP_ENABLE_APACHE
-            value: "false"
-          - name: SWISNAP_ENABLE_DOCKER
-            value: "true"
-          - name: SWISNAP_ENABLE_ELASTICSEARCH
-            value: "false"
-          - name: SWISNAP_ENABLE_KUBERNETES
-            value: "false"
-          - name: SWISNAP_ENABLE_MESOS
-            value: "false"
-          - name: SWISNAP_ENABLE_MONGODB
-            value: "false"
-          - name: SWISNAP_ENABLE_MYSQL
-            value: "false"
-          - name: SWISNAP_ENABLE_RABBITMQ
-            value: "false"
-          - name: SWISNAP_ENABLE_STATSD
-            value: "false"
-          - name: SWISNAP_ENABLE_ZOOKEEPER
-            value: "false"
-          - name: SWISNAP_DISABLE_HOSTAGENT
-            value: "false"
-          - name: SWISNAP_DISABLE_PROCESSES
-            value: "false"
-          - name: SWISNAP_SECURE
-            value: "false"    
+        envFrom:
+          - configMapRef:
+              name: swisnap-host-configmap   
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock

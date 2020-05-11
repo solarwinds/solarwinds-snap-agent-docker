@@ -110,8 +110,6 @@ main() {
     run_plugins_with_default_configs
     set_custom_tags
 
-    env | sort
-
     # shellcheck disable=SC2086
     exec ${SWISNAP_HOME}/sbin/swisnapd --config ${CONFIG_FILE} ${FLAGS} --log-path ""
 }
