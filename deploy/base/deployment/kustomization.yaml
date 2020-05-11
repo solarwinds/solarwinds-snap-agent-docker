@@ -7,6 +7,26 @@ commonLabels:
   part-of: monitoring
   component: agent
 
+configMapGenerator:
+  - name: swisnap-k8s-configmap
+    behavior: create
+    literals:
+      - SWISNAP_ENABLE_APACHE=false
+      - SWISNAP_ENABLE_DOCKER=false
+      - SWISNAP_ENABLE_ELASTICSEARCH=false
+      - SWISNAP_ENABLE_KUBERNETES=true
+      - SWISNAP_ENABLE_MESOS=false
+      - SWISNAP_ENABLE_MONGODB=false
+      - SWISNAP_ENABLE_MYSQL=false
+      - SWISNAP_ENABLE_RABBITMQ=false
+      - SWISNAP_ENABLE_STATSD=false
+      - SWISNAP_ENABLE_ZOOKEEPER=false
+      - SWISNAP_DISABLE_HOSTAGENT=true
+      - SWISNAP_DISABLE_PROCESSES=true
+      - SWISNAP_SECURE=false
+      - HOST_PROC=/host/proc
+      - LOG_LEVEL=INFO
+
 resources:
   - swisnap-agent-deployment.yaml
   - swisnap-agent-serviceaccount.yaml

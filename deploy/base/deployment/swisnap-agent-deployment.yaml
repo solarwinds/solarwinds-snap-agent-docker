@@ -41,34 +41,9 @@ spec:
                 secretKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
-            - name: LOG_LEVEL
-              value: "WARN"
-            - name: SWISNAP_ENABLE_APACHE
-              value: "false"
-            - name: SWISNAP_ENABLE_DOCKER
-              value: "false"
-            - name: SWISNAP_ENABLE_ELASTICSEARCH
-              value: "false"
-            - name: SWISNAP_ENABLE_KUBERNETES
-              value: "true"
-            - name: SWISNAP_ENABLE_MESOS
-              value: "false"
-            - name: SWISNAP_ENABLE_MONGODB
-              value: "false"
-            - name: SWISNAP_ENABLE_MYSQL
-              value: "false"
-            - name: SWISNAP_ENABLE_RABBITMQ
-              value: "false"
-            - name: SWISNAP_ENABLE_STATSD
-              value: "false"
-            - name: SWISNAP_ENABLE_ZOOKEEPER
-              value: "false"
-            - name: SWISNAP_DISABLE_HOSTAGENT
-              value: "true"
-            - name: SWISNAP_DISABLE_PROCESSES
-              value: "true"
-            - name: SWISNAP_SECURE
-              value: "false" 
+          envFrom:
+            - configMapRef:
+                name: swisnap-k8s-configmap
           resources:
             limits:
               cpu: 100m
