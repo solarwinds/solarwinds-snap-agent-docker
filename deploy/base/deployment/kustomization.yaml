@@ -25,7 +25,7 @@ configMapGenerator:
       - SWISNAP_DISABLE_PROCESSES=true
       - SWISNAP_SECURE=false
       - HOST_PROC=/host/proc
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=WARN
 
 resources:
   - swisnap-agent-deployment.yaml
