@@ -16,7 +16,9 @@ RUN apt-get update && \
       ca-certificates \
       docker.io \
       curl \
-      yq
+      yq && \ 
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG swisnap_version
 RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ xenial main" > /etc/apt/sources.list.d/swisnap.list && \
