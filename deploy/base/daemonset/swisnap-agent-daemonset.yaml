@@ -39,7 +39,7 @@ spec:
                 key: APPOPTICS_TOKEN
         envFrom:
           - configMapRef:
-              name: swisnap-host-configmap   
+              name: swisnap-host-configmap
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
