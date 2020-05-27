@@ -3,7 +3,7 @@ FROM ubuntu:bionic
 LABEL authors='SolarWinds AppOptics team <support@appoptics.com>'
 
 USER root
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 ARG swisnap_repo=swisnap
 RUN apt-get update && \

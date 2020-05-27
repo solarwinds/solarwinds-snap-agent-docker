@@ -44,6 +44,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: swisnap-k8s-configmap
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
           resources:
             limits:
               cpu: 100m
@@ -51,6 +55,10 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
   strategy:
     type: RollingUpdate
     rollingUpdate:
