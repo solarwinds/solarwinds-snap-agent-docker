@@ -1,4 +1,4 @@
-DOCKERFILE_VERSION=3.0.1
+DOCKERFILE_VERSION=3.0.2
 SWISNAP_VERSION=2.7.5.577
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
@@ -13,7 +13,7 @@ build-and-release-docker:
 
 .PHONY: test
 test:
-	docker build -t $(USER)/$(REPOSITORY):$(TAG) -t $(USER)/$(REPOSITORY):latest --build-arg swisnap_repo=swisnap-stg --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	docker build -t $(USER)/$(REPOSITORY):$(TAG) -t $(USER)/$(REPOSITORY):latest --build-arg swisnap_repo=swisnap --build-arg swisnap_version=$(SWISNAP_VERSION) .
 	cd ./deploy/overlays/stable/daemonset && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)
 	cd ./deploy/overlays/stable/deployment && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)
 	cd ./deploy/overlays/stable/events-collector && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)

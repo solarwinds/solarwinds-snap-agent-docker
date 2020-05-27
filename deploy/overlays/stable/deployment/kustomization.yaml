@@ -6,4 +6,4 @@ resources:
 
 images:
 - name: solarwinds/solarwinds-snap-agent-docker
-  newTag: 3.0.1-2.7.5.577
+  newTag: 3.0.2-2.7.5.577

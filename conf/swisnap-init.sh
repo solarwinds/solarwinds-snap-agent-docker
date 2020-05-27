@@ -92,6 +92,12 @@ run_plugins_with_default_configs() {
         rm ${SWISNAP_HOME}/autoload/snap-plugin-publisher-processes
         rm ${SWISNAP_HOME}/autoload/task-processes.yaml
     fi
+
+    if [ "${SWISNAP_ENABLE_PROMETHEUS}" = "true" ]; then 
+        mv ${PLUGINS_DIR}/prometheus.yaml.example ${PLUGINS_DIR}/prometheus.yaml
+        yq w -i ${PLUGINS_DIR}/prometheus.yaml collector.prometheus.all.monitor_kubernetes_pods true
+        yq d -i ${PLUGINS_DIR}/prometheus.yaml collector.prometheus.all.urls
+    fi
 }
 
 set_custom_tags() {
