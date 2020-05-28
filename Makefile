@@ -20,16 +20,16 @@ test:
 
 .PHONY: deploy-daemonset
 deploy-daemonset:
-	kubectl apply -k ./deploy/base/daemonset
+	kustomize build ./deploy/base/daemonset | kubectl apply -f-
 
 .PHONY: delete-daemonset
 delete-daemonset:
-	kubectl delete -k ./deploy/base/daemonset
+	kustomize build ./deploy/base/daemonset | kubectl delete -f-
 
 .PHONY: deploy-deployment
 deploy-deployment:
-	kubectl apply -k ./deploy/base/deployment
+	kustomize build ./deploy/base/deployment | kubectl apply -f-
 
 .PHONY: delete-deployment
 delete-deployment:
-	kubectl delete -k ./deploy/base/deployment
+	kustomize build ./deploy/base/deployment | kubectl delete -f-

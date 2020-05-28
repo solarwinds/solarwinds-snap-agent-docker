@@ -20,8 +20,7 @@ spec:
           image: solarwinds/solarwinds-snap-agent-docker:latest
           imagePullPolicy: IfNotPresent
           ports:
-          - name: probe
-            containerPort: 21413
+          - containerPort: 21413
             protocol: TCP
           livenessProbe:
             httpGet:

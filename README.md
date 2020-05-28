@@ -29,7 +29,7 @@ By default, RBAC is enabled in the deploy manifests.  If you are not using RBAC 
 
 To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
-kubectl apply -k ./deploy/base/deployment/
+kustomize build ./deploy/overlays/stable/deployment | kubectl apply -f-
 ```
 
 Enable the Kubernetes plugin in the AppOptics UI and you should start seeing data trickle in.
@@ -38,7 +38,7 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
-kubectl apply -k ./deploy/base/daemonset/
+kustomize build ./deploy/overlays/stable/daemonset | kubectl apply -f-
 ```
 
 Enable the Docker plugin in the AppOptics UI and you should start seeing data trickle in.
