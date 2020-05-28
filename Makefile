@@ -10,13 +10,17 @@ LATEST_IMAGE=$(USER)/$(REPOSITORY):latest
 build:
 	docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
+.PHONY: build-test-image
+build:
+	docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap-stg --build-arg swisnap_version=$(SWISNAP_VERSION) .
+
 .PHONY: build-and-release-docker
 build-and-release-docker: build
 	@docker push $(CURRENT_IMAGE)
 	@docker push $(LATEST_IMAGE)
 
 .PHONY: test
-test: build
+test: build-test-image
 	cd ./deploy/overlays/stable/daemonset && kustomize edit set image${CURRENT_IMAGE}
 	cd ./deploy/overlays/stable/deployment && kustomize edit set image ${CURRENT_IMAGE}
 	cd ./deploy/overlays/stable/events-collector && kustomize edit set image ${CURRENT_IMAGE}
