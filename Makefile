@@ -3,20 +3,23 @@ SWISNAP_VERSION=2.7.5.577
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
 REPOSITORY=solarwinds-snap-agent-docker
+CURRENT_IMAGE=$(USER)/$(REPOSITORY):$(TAG)
+LATEST_IMAGE=$(USER)/$(REPOSITORY):latest
+
+.PHONY: build
+build:
+	docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-and-release-docker
-build-and-release-docker:
-	@docker build -t $(USER)/$(REPOSITORY):$(TAG) --build-arg swisnap_version=$(SWISNAP_VERSION) .
-	@docker push $(USER)/$(REPOSITORY):$(TAG)
-	@docker tag $(USER)/$(REPOSITORY):$(TAG) $(USER)/$(REPOSITORY):latest
-	@docker push $(USER)/$(REPOSITORY):latest
+build-and-release-docker: build
+	@docker push $(CURRENT_IMAGE)
+	@docker push $(LATEST_IMAGE)
 
 .PHONY: test
-test:
-	docker build -t $(USER)/$(REPOSITORY):$(TAG) -t $(USER)/$(REPOSITORY):latest --build-arg swisnap_repo=swisnap --build-arg swisnap_version=$(SWISNAP_VERSION) .
-	cd ./deploy/overlays/stable/daemonset && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)
-	cd ./deploy/overlays/stable/deployment && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)
-	cd ./deploy/overlays/stable/events-collector && kustomize edit set image $(USER)/$(REPOSITORY):$(TAG)
+test: build
+	cd ./deploy/overlays/stable/daemonset && kustomize edit set image${CURRENT_IMAGE}
+	cd ./deploy/overlays/stable/deployment && kustomize edit set image ${CURRENT_IMAGE}
+	cd ./deploy/overlays/stable/events-collector && kustomize edit set image ${CURRENT_IMAGE}
 
 .PHONY: deploy-daemonset
 deploy-daemonset:
@@ -33,3 +36,7 @@ deploy-deployment:
 .PHONY: delete-deployment
 delete-deployment:
 	kubectl delete -k ./deploy/base/deployment
+
+.PHONY: circleci 
+circleci:  ## Note: This expects you to have circleci cli installed locally
+	circleci local execute --job build --job validate

@@ -1,19 +1,61 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
       - image: docker:stable-git
-
     steps:
       - setup_remote_docker
       - checkout
-
+      - run:
+          name: Install Make
+          command: apk add --no-cache make
       - run:
           name: Build docker image
-          command: docker build .
+          command: make build
+  validate:
+    docker:
+      - image: alpine:3.9.6
+    steps:
+      - run:
+          name: Install Git
+          command: apk add --no-cache git curl
+      - checkout
+      - install-kustomize
+      - install-kubeeval
+      - run:
+          name: Validate Daemonset Manifest
+          command: kustomize build ./deploy/overlays/stable/daemonset |  kubeval --strict
+      - run:
+          name: Validate Deployment Manifest
+          command: kustomize build ./deploy/overlays/stable/deployment |  kubeval --strict
+      - run:
+          name: Validate Events-Collector Manifest
+          command: kustomize build ./deploy/overlays/stable/events-collector |  kubeval --strict               
 
 workflows:
   version: 2
-  build:
+  build-test:
     jobs:
       - build
+      - validate
+
+commands:
+  install-kustomize:
+    steps:
+      - run:
+          name: Install Kustomize
+          environment:
+            KUSTOMIZE_VERSION: 3.5.5
+          command: |
+            curl -sL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz | tar xvz --directory=/usr/local/bin
+            chmod +x /usr/local/bin/kustomize
+  install-kubeeval:
+    steps:
+      - run:
+          name: Install Kubeeval
+          environment:
+            KUBEEVAL_VERSION: 0.15.0
+          command: |
+            wget https://github.com/instrumenta/kubeval/releases/download/${KUBEEVAL_VERSION}/kubeval-linux-amd64.tar.gz
+            tar xf kubeval-linux-amd64.tar.gz
+            cp kubeval /usr/local/bin
