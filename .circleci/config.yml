@@ -52,10 +52,9 @@ commands:
   install-kubeeval:
     steps:
       - run:
-          name: Install Kubeeval
+          name: Install Kubeval
           environment:
-            KUBEEVAL_VERSION: 0.15.0
+            KUBEVAL_VERSION: 0.15.0
           command: |
-            wget https://github.com/instrumenta/kubeval/releases/download/${KUBEEVAL_VERSION}/kubeval-linux-amd64.tar.gz
-            tar xf kubeval-linux-amd64.tar.gz
-            cp kubeval /usr/local/bin
+            curl -sL https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar xvz --directory=/usr/local/bin
+            chmod +x /usr/local/bin/kubeval
