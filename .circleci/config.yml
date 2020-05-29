@@ -19,18 +19,19 @@ jobs:
       - run:
           name: Install Git
           command: apk add --no-cache git curl
-      - checkout
       - install-kustomize
       - install-kubeeval
+      - kubernetes/install-kubectl
+      - checkout
       - run:
           name: Validate Daemonset Manifest
-          command: kustomize build ./deploy/overlays/stable/daemonset |  kubeval --strict
+          command: kubectl kustomize ./deploy/overlays/stable/daemonset |  kubeval --strict
       - run:
           name: Validate Deployment Manifest
-          command: kustomize build ./deploy/overlays/stable/deployment |  kubeval --strict
+          command: kubectl kustomize ./deploy/overlays/stable/deployment |  kubeval --strict
       - run:
           name: Validate Events-Collector Manifest
-          command: kustomize build ./deploy/overlays/stable/events-collector |  kubeval --strict               
+          command: kubectl kustomize ./deploy/overlays/stable/events-collector |  kubeval --strict               
 
 workflows:
   version: 2
@@ -38,6 +39,9 @@ workflows:
     jobs:
       - build
       - validate
+
+orbs:
+  kubernetes: circleci/kubernetes@0.11.0    
 
 commands:
   install-kustomize:

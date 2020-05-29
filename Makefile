@@ -12,7 +12,7 @@ build:
 
 .PHONY: build-test
 build-test: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap-stg  --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap  --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-and-release-docker
 build-and-release-docker: build
@@ -21,22 +21,26 @@ build-and-release-docker: build
 
 .PHONY: test
 test: build-test
-	cd ./deploy/overlays/stable/daemonset && kustomize edit set image $(CURRENT_IMAGE)
-	cd ./deploy/overlays/stable/deployment && kustomize edit set image $(CURRENT_IMAGE)
-	cd ./deploy/overlays/stable/events-collector && kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/daemonset && kubectl kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/deployment && kubectl kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/events-collector && kubectl kustomize edit set image $(CURRENT_IMAGE)
 
 .PHONY: deploy-daemonset
 deploy-daemonset:
-	kustomize build ./deploy/base/daemonset | kubectl apply -f-
+	kubectl apply -k ./deploy/base/daemonset
 
 .PHONY: delete-daemonset
 delete-daemonset:
-	kustomize build ./deploy/base/daemonset | kubectl delete -f-
+	kubectl delete -k ./deploy/base/daemonset
 
 .PHONY: deploy-deployment
 deploy-deployment:
-	kustomize build ./deploy/base/deployment | kubectl apply -f-
+	kubectl apply -k ./deploy/base/deployment
 
 .PHONY: delete-deployment
 delete-deployment:
-	kustomize build ./deploy/base/deployment | kubectl delete -f-
+	kustomize delete -k ./deploy/base/deployment
+
+.PHONY: circleci 
+circleci:  ## Note: This expects you to have circleci cli installed locally
+	circleci local execute --job build --job validate
