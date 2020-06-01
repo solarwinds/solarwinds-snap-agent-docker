@@ -7,8 +7,8 @@ Docker and Kubernetes assets for running SolarWinds Snap Agent
 Use the containerized SolarWinds Snap Agent to monitor Docker or Kubernetes environments. Monitor Kubernetes cluster and application health. Aggregate metrics across clusters distributed across multiple data centers and cloud providers. Track pods, deployments, services and more with Kubernetes-integrated service discovery.
 
 Kubernetes assets:
-- [Deployment](swisnap-agent-deployment.yaml) - A single pod to talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
-- [DaemonSet](swisnap-agent-daemonset.yaml) - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics to AppOptics.
+- [Deployment](deploy/base/deployment/swisnap-agent-deployment.yaml) - A single pod to talk to the Kubernetes API to send Kubernetes specific metrics to AppOptics.
+- [DaemonSet](deploy/base/daemonset/swisnap-agent-daemonset.yaml) - A DaemonSet that runs a pod on every node in your cluster and publishes HostAgent and Docker metrics to AppOptics.
 
 A typical cluster will utilize both the Deployment and DaemonSet assets.
 
@@ -16,27 +16,29 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 
 ## Installation
 
-### Deployment
-
-If you're using RBAC on your Kubernetes cluster you'll need to deploy the Service Account first so that the agent can talk to your Kubernetes API:
-``` bash
-kubectl apply -f swisnap-agent-serviceaccount.yaml
+All deployments expect an appoptics-token secret to exist.  You can create this secret via
+```
+kubectl create secret generic appoptics-token -n kube-system --from-literal=APPOPTICS_TOKEN=<REPLACE WITH TOKEN>
 ```
 
-To deploy the Deployment to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `configmaps/appoptics-token.yaml` with your token and run:
+
+### Deployment
+
+By default, RBAC is enabled in the deploy manifests.  If you are not using RBAC you can deploy [swisnap-agent-daemonset.yaml](deploy/base/daemonset/swisnap-agent-daemonset.yaml) removing the reference to the Service Account.
+
+
+To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
-kubectl create -f configmaps/appoptics-token.yaml -f configmaps/deployment.yaml
-kubectl apply -f swisnap-agent-deployment.yaml
+kubectl apply -k ./deploy/overlays/stable/deployment
 ```
 
 Enable the Kubernetes plugin in the AppOptics UI and you should start seeing data trickle in.
 
 ### DaemonSet
 
-The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes, update the `APPOPTICS_TOKEN` environment variable in `configmaps/appoptics-token.yaml` with your token and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
-kubectl create -f configmaps/appoptics-token.yaml -f configmaps/daemonset.yaml
-kubectl apply -f swisnap-agent-daemonset.yaml
+kubectl apply -k ./deploy/overlays/stable/daemonset
 ```
 
 Enable the Docker plugin in the AppOptics UI and you should start seeing data trickle in.

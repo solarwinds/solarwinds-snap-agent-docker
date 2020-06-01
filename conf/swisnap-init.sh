@@ -16,6 +16,7 @@ swisnap_config_setup() {
     fi
 
     yq d -i ${CONFIG_FILE} log_path
+    yq w -i ${CONFIG_FILE} restapi.addr 0.0.0.0
 
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
@@ -110,7 +111,7 @@ main() {
     set_custom_tags
 
     # shellcheck disable=SC2086
-    exec ${SWISNAP_HOME}/sbin/swisnapd --config ${CONFIG_FILE} ${FLAGS}
+    exec ${SWISNAP_HOME}/sbin/swisnapd --config ${CONFIG_FILE} ${FLAGS} --log-path ""
 }
 
 main

@@ -1,5 +1,5 @@
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: swisnap-agent-k8s-event-collector
   namespace: kube-system
@@ -15,7 +15,7 @@ spec:
       labels:
         app: swisnap-agent-k8s-event-collector
     spec:
-      serviceAccountName: swisnap-agent-serviceaccount
+      serviceAccountName: swisnap-events-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s-event-collector
           image: 'solarwinds/solarwinds-snap-agent-docker:latest'
@@ -28,14 +28,12 @@ spec:
           env:
             - name: APPOPTICS_TOKEN
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
-            - name: SWISNAP_ENABLE_KUBERNETES # turn off default plugin configuration
-              value: 'false'
           envFrom:
             - configMapRef:
-                name: swisnap-agent-k8s-configmap
+                name: swisnap-agent-k8s-events-configmap
           resources:
             limits:
               cpu: 100m

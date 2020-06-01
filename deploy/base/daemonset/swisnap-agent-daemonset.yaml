@@ -1,11 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: swisnap-agent-ds
-  namespace: kube-system
   labels:
     daemon: swisnap-agent-ds
 spec:
+  selector:
+    matchLabels:
+      daemon: swisnap-agent-ds
   updateStrategy:
     type: RollingUpdate
   template:
@@ -19,8 +21,11 @@ spec:
         effect: NoSchedule
       containers:
       - name: swisnap-agent-ds
-        image: 'solarwinds/solarwinds-snap-agent-docker:latest'
-        imagePullPolicy: Always
+        image: solarwinds/solarwinds-snap-agent-docker:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 21413
+            protocol: TCP
         env:
           - name: APPOPTICS_HOSTNAME
             valueFrom:
@@ -28,12 +33,12 @@ spec:
                 fieldPath: spec.nodeName
           - name: APPOPTICS_TOKEN
             valueFrom:
-              configMapKeyRef:
+              secretKeyRef:
                 name: appoptics-token
                 key: APPOPTICS_TOKEN
         envFrom:
           - configMapRef:
-              name: swisnap-agent-ds-configmap
+              name: swisnap-host-configmap
         volumeMounts:
           - name: docker-sock
             mountPath: /var/run/docker.sock
@@ -46,13 +51,13 @@ spec:
           httpGet:
             path: /v1/plugins
             port: 21413
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /v1/plugins
             port: 21413
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           timeoutSeconds: 5
       volumes:
         - name: docker-sock
@@ -64,6 +69,3 @@ spec:
         - name: cgroup
           hostPath:
             path: /sys/fs/cgroup
-        - name: swisnap-agent-ds-configmap
-          configMap:
-            name: swisnap-agent-ds-configmap
