@@ -16,6 +16,8 @@ spec:
       labels:
         daemon: swisnap-agent-ds
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule

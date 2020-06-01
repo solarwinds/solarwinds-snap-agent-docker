@@ -14,6 +14,8 @@ spec:
       labels:
         app: swisnap-agent-k8s
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       serviceAccountName: swisnap-agent-serviceaccount
       containers:
         - name: swisnap-agent-k8s
