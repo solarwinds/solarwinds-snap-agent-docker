@@ -1,4 +1,4 @@
-DOCKERFILE_VERSION=3.1.0
+DOCKERFILE_VERSION=3.2.0
 SWISNAP_VERSION=2.7.5.577
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
@@ -21,9 +21,9 @@ build-and-release-docker: build
 
 .PHONY: test
 test: build-test
-	cd ./deploy/overlays/stable/daemonset && kubectl kustomize edit set image $(CURRENT_IMAGE)
-	cd ./deploy/overlays/stable/deployment && kubectl kustomize edit set image $(CURRENT_IMAGE)
-	cd ./deploy/overlays/stable/events-collector && kubectl kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/daemonset && kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/deployment && kustomize edit set image $(CURRENT_IMAGE)
+	cd ./deploy/overlays/stable/events-collector && kustomize edit set image $(CURRENT_IMAGE)
 
 .PHONY: deploy-daemonset
 deploy-daemonset:

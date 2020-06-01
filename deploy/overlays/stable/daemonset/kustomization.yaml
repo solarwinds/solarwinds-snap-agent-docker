@@ -1,9 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-bases:
-- ../../../base/daemonset
 
 images:
 - name: solarwinds/solarwinds-snap-agent-docker
-  newTag: 3.1.0-2.7.5.577
+  newTag: 3.2.0-2.7.5.577
+resources:
+- ../../../base/daemonset
