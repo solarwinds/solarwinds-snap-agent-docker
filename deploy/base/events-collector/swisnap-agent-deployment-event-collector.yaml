@@ -6,8 +6,6 @@ metadata:
   labels:
     app: swisnap-agent-k8s-event-collector
 spec:
-  nodeSelector:
-    kubernetes.io/os: linux
   replicas: 1
   selector:
     matchLabels:
