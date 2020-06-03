@@ -155,6 +155,7 @@ The following environment parameters are available:
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause  replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one.  Typically Kubernetes collection is only enabled on the Deployment asset.
+ SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable prometheus pod annotation scrapping
  SWISNAP_ENABLE_MESOS           | Set this to `true` to enable the Mesos plugin.
  SWISNAP_ENABLE_MONGODB         | Set this to `true` to enable the MongoDB plugin.
  SWISNAP_ENABLE_RABBITMQ        | Set this to `true` to enable the RabbitMQ plugin.
