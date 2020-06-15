@@ -1,3 +1,4 @@
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -19,12 +20,20 @@ spec:
       containers:
         - name: swisnap-agent-k8s-event-collector
           image: 'solarwinds/solarwinds-snap-agent-docker:latest'
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           volumeMounts:
-            - name: plugins-vol
-              mountPath: /opt/SolarWinds/Snap/etc/plugins.d
-            - name: tasks-vol
-              mountPath: /opt/SolarWinds/Snap/etc/tasks.d
+            - name: plugins-logs
+              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/logs.yaml
+              subPath: logs.yaml
+            - name: plugins-kubernetes
+              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/kubernetes.yaml
+              subPath: kubernetes.yaml
+            - name: tasks-aokubernetes
+              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-aokubernetes.yaml
+              subPath: task-aokubernetes.yaml
+            - name: tasks-logs
+              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-logs.yaml
+              subPath: task-logs.yaml
           env:
             - name: APPOPTICS_TOKEN
               valueFrom:
@@ -54,22 +63,30 @@ spec:
             initialDelaySeconds: 5
             timeoutSeconds: 5
       volumes:
-        - name: plugins-vol
+        - name: plugins-logs
+          configMap:
+            name: plugin-configs
+            items:
+              - key: logs.yaml
+                path: logs.yaml
+        - name: plugins-kubernetes
           configMap:
             name: plugin-configs
             items:
               - key: kubernetes.yaml
                 path: kubernetes.yaml
-              - key: logs.yaml
-                path: logs.yaml
-        - name: tasks-vol
+        - name: tasks-logs
+          configMap:
+            name: task-manifests
+            items:
+              - key: task-logs.yaml
+                path: task-logs.yaml
+        - name: tasks-aokubernetes
           configMap:
             name: task-manifests
             items:
               - key: task-aokubernetes.yaml
                 path: task-aokubernetes.yaml
-              - key: task-logs.yaml
-                path: task-logs.yaml
   strategy:
     type: RollingUpdate
     rollingUpdate:

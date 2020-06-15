@@ -1,5 +1,5 @@
-DOCKERFILE_VERSION=3.2.0
-SWISNAP_VERSION=2.7.5.577
+DOCKERFILE_VERSION=3.3.0
+SWISNAP_VERSION=3.1.1.717
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
 REPOSITORY=solarwinds-snap-agent-docker
@@ -12,7 +12,7 @@ build:
 
 .PHONY: build-test
 build-test: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap  --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-and-release-docker
 build-and-release-docker: build

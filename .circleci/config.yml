@@ -1,3 +1,4 @@
+---
 version: 2.1
 jobs:
   build:
@@ -25,13 +26,13 @@ jobs:
       - checkout
       - run:
           name: Validate Daemonset Manifest
-          command: kubectl kustomize ./deploy/overlays/stable/daemonset |  kubeval --strict
+          command: kubectl kustomize ./deploy/overlays/stable/daemonset | kubeval --strict
       - run:
           name: Validate Deployment Manifest
-          command: kubectl kustomize ./deploy/overlays/stable/deployment |  kubeval --strict
+          command: kubectl kustomize ./deploy/overlays/stable/deployment | kubeval --strict
       - run:
           name: Validate Events-Collector Manifest
-          command: kubectl kustomize ./deploy/overlays/stable/events-collector |  kubeval --strict               
+          command: kubectl kustomize ./deploy/overlays/stable/events-collector | kubeval --strict
 
 workflows:
   version: 2
@@ -41,7 +42,7 @@ workflows:
       - validate
 
 orbs:
-  kubernetes: circleci/kubernetes@0.11.0    
+  kubernetes: circleci/kubernetes@0.11.0
 
 commands:
   install-kustomize:

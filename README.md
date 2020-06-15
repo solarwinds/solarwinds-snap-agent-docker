@@ -2,6 +2,24 @@
 
 Docker and Kubernetes assets for running SolarWinds Snap Agent
 
+
+.. contents:: :local:
+
+
+## Table of contents
+
+  * [About](#about)
+  * [Installation](#installation)
+    * [Deployment](#deployment)
+    * [DaemonSet](daemonset)
+    * [Sidecar](#sidecar)
+  * [Configuration](#configuration)
+    * [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests)
+    * [Environment Parameters](#environment-parameters)
+  * [Events collector](#events-collector)
+  * [Dashboard](#dashboard)
+  * [Development](#development)
+
 ## About
 
 Use the containerized SolarWinds Snap Agent to monitor Docker or Kubernetes environments. Monitor Kubernetes cluster and application health. Aggregate metrics across clusters distributed across multiple data centers and cloud providers. Track pods, deployments, services and more with Kubernetes-integrated service discovery.
@@ -16,7 +34,7 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 
 ## Installation
 
-All deployments expect an appoptics-token secret to exist.  You can create this secret via
+All deployments expect an appoptics-token secret to exist. You can create this secret via
 ```
 kubectl create secret generic appoptics-token -n kube-system --from-literal=APPOPTICS_TOKEN=<REPLACE WITH TOKEN>
 ```
@@ -24,8 +42,7 @@ kubectl create secret generic appoptics-token -n kube-system --from-literal=APPO
 
 ### Deployment
 
-By default, RBAC is enabled in the deploy manifests.  If you are not using RBAC you can deploy [swisnap-agent-daemonset.yaml](deploy/base/daemonset/swisnap-agent-daemonset.yaml) removing the reference to the Service Account.
-
+By default, RBAC is enabled in the deploy manifests. If you are not using RBAC you can deploy [swisnap-agent-deployment.yaml](deploy/base/deployment/swisnap-agent-deployment.yaml) removing the reference to the Service Account.
 
 To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created and run:
 ``` bash
@@ -53,7 +70,7 @@ If you wanted to run containerized SolarWinds Snap Agent with custom taskfiles, 
 docker run -d -e APPOPTICS_TOKEN=token \
            -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
            --name swisnap-agent
-           solarwinds/solarwinds-snap-agent-docker:1.1.0
+           solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717
 ```
 
 or using docker-compose:
@@ -62,7 +79,7 @@ or using docker-compose:
 version: '3'
 services:
   swisnap:
-    image: solarwinds/solarwinds-snap-agent-docker:1.1.0
+    image: solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717
     hostname: swisnap-agent
     container_name: swisnap-agent
     volumes:
@@ -78,7 +95,7 @@ If you wanted to run this on Kubernetes as a sidecar for monitoring specific ser
 Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
 ``` yaml
 - name: zookeeper-ao-sidecar
-  image: 'solarwinds/solarwinds-snap-agent-docker:x.x.x'
+  image: 'solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717'
   env:
     - name: APPOPTICS_TOKEN
       value: APPOPTICS_TOKEN
@@ -92,50 +109,75 @@ Add a second container to your deployment YAML underneath `spec.template.spec.co
 
 ### Custom plugins configuration and tasks manifests
 
-Host Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for plugins and second for tasks.
+Host Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
 
 ``` bash
-# create plugins configMap
-kubectl create configmap plugin-configs --from-file=/path/to/my/plugins.d/ --namespace=kube-system
 
-# create tasks configMap
-kubectl create configmap task-manifests --from-file=/path/to/my/tasks.d/ --namespace=kube-system
+# FIXME add send example for config and tasks autoload
+
+
+# create plugin configMap
+kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
+
+# create task configMap
+kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
 
 # check if everything is fine
 kubectl describe configmaps plugin-configs task-manifests
 ```
 
-Now we are ready to inject these configMaps to either daemonset or deployment. Let's do this on `swisnap-agent-deployment.yaml`:
+Now we are ready to inject these configMaps to either daemonset or deployment. Let's do this on `swisnap-agent-deployment.yaml`: # FIXMEi udpate difa na kustom i na deploy
 
 ``` diff
-22a23,27
->           volumeMounts:
->             - name: plugins-vol
->               mountPath: /opt/SolarWinds/Snap/etc/plugins.d
->             - name: tasks-vol
->               mountPath: /opt/SolarWinds/Snap/etc/tasks.d
-32,33c37,38
-<             - name: SWISNAP_ENABLE_KUBERNETES
-<               value: 'true'
----
->             - name: SWISNAP_ENABLE_KUBERNETES # turn off default plugin configuration
->               value: 'false'
-52a58,70
->       volumes:
->         - name: plugins-vol
->           configMap:
->             name: plugin-configs
->             items:
->               - key: kubernetes.yaml
->                 path: kubernetes.yaml
->         - name: tasks-vol
->           configMap:
->             name: task-manifests
->             items:
->               - key: task-aokubernetes.yaml
->                 path: task-aokubernetes.yaml
-58d75
-```
+diff --git a/deploy/base/deployment/kustomization.yaml b/deploy/base/deployment/kustomization.yaml
+index 79e0110..000a108 100644
+--- a/deploy/base/deployment/kustomization.yaml
++++ b/deploy/base/deployment/kustomization.yaml
+@@ -15,7 +15,7 @@ configMapGenerator:
+       - SWISNAP_ENABLE_APACHE=false
+       - SWISNAP_ENABLE_DOCKER=false
+       - SWISNAP_ENABLE_ELASTICSEARCH=false
+-      - SWISNAP_ENABLE_KUBERNETES=true
++      - SWISNAP_ENABLE_KUBERNETES=false
+       - SWISNAP_ENABLE_PROMETHEUS=false
+       - SWISNAP_ENABLE_MESOS=false
+       - SWISNAP_ENABLE_MONGODB=false
+diff --git a/deploy/base/deployment/swisnap-agent-deployment.yaml b/deploy/base/deployment/swisnap-agent-deployment.yaml
+index 294c4b4..babff7d 100644
+--- a/deploy/base/deployment/swisnap-agent-deployment.yaml
++++ b/deploy/base/deployment/swisnap-agent-deployment.yaml
+@@ -45,6 +45,12 @@ spec:
+             - configMapRef:
+                 name: swisnap-k8s-configmap
+           volumeMounts:
++            - name: kubernetes-plugin-vol
++              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/kubernetes.yaml
++              subPath: kubernetes.yaml
++            - name: kubernetes-task-vol
++              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-aokubernetes.yaml
++              subPath: task-aokubernetes.yaml
+             - name: proc
+               mountPath: /host/proc
+               readOnly: true
+@@ -56,6 +62,18 @@ spec:
+               cpu: 100m
+               memory: 256Mi
+       volumes:
++        - name: kubernetes-plugin-vol
++          configMap:
++            name: kubernetes-plugin-config
++            items:
++              - key: kubernetes.yaml
++                path: kubernetes.yaml
++        - name: kubernetes-task-vol
++          configMap:
++            name: kubernetes-task-manifest
++            items:
++              - key: task-aokubernetes.yaml
++                path: task-aokubernetes.yaml
+         - name: proc
+           hostPath:
+             path: /proc
 Notice that we're not utilizing [Environment Parameters](###environment-parameters) to turn on Kubernetes plugin. After editing deployment manifest it's time to create it - follow the steps in [Installation](##installation).
 
 ### Environment Parameters
@@ -148,22 +190,23 @@ The following environment parameters are available:
  APPOPTICS_TOKEN                | Your AppOptics token. This parameter is required.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
- SWISNAP_SECURE                 | Set this to `true` to run only signed plugins
+ LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
+ SWISNAP_SECURE                 | Set this to `true` to run only signed plugins.
  SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the Host Agent system metrics collection.
  SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the Host Agent processes metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
- SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause  replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one.  Typically Kubernetes collection is only enabled on the Deployment asset.
- SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable prometheus pod annotation scrapping
+ SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
  SWISNAP_ENABLE_MESOS           | Set this to `true` to enable the Mesos plugin.
  SWISNAP_ENABLE_MONGODB         | Set this to `true` to enable the MongoDB plugin.
+ SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
+ SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable prometheus pod annotation scrapping
  SWISNAP_ENABLE_RABBITMQ        | Set this to `true` to enable the RabbitMQ plugin.
  SWISNAP_ENABLE_STATSD          | Set this to `true` to enable the Statsd plugin.
  SWISNAP_ENABLE_ZOOKEEPER       | Set this to `true` to enable the Zookeeper plugin.
- SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
 
-If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that AppOptics Host Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](###custom-plugins-configuration-and-tasks-manifests).
+If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that SolarWinds Snap Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests).
 
 ## Events collector
 
@@ -249,14 +292,15 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
 
   kubectl describe configmaps -n kube-system plugin-configs task-manifests
   ```
-* Edit `configmaps/appoptics-token.yaml` and insert your `APPOPTICS_TOKEN`.
-* Create ServiceAccount and Deployment:
+* Create Kubernetes secret for APPOPTICS_TOKEN
   ```shell
-  kubectl apply -f swisnap-agent-serviceaccount.yaml
-  kubectl create -f configmaps/appoptics-token.yaml -f configmaps/deployment.yaml
-  kubectl apply -f swisnap-agent-deployment.yaml
+  kubectl create secret generic appoptics-token -n kube-system --from-literal=APPOPTICS_TOKEN=<REPLACE WITH TOKEN>
   ```
-* Watch your cluster events in Loggly :)
+* Create Events Collector Deployment (it will automatically create corresponding ServiceAccount)
+  ```shell
+  kubectl apply -k ./deploy/overlays/stable/events-collector/
+  ```
+* Watch your cluster events in Loggly
 
 
 ## Dashboard
@@ -269,3 +313,4 @@ The included Kubernetes resources rely on a Docker image from [Docker Hub](https
 ```
 make build-and-release-docker
 ```
+After new custom Docker image is succesfuly released to Docker Hub, please remember to update corresponding entry in stable overlay for used [Kubernetes objects](deploy/base/).
