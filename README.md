@@ -2,10 +2,6 @@
 
 Docker and Kubernetes assets for running SolarWinds Snap Agent
 
-
-.. contents:: :local:
-
-
 ## Table of contents
 
   * [About](#about)
@@ -112,10 +108,6 @@ Add a second container to your deployment YAML underneath `spec.template.spec.co
 Host Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
 
 ``` bash
-
-# FIXME add send example for config and tasks autoload
-
-
 # create plugin configMap
 kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
 
@@ -123,10 +115,10 @@ kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugin
 kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
 
 # check if everything is fine
-kubectl describe configmaps plugin-configs task-manifests
+kubectl describe configmaps --namespace=kube-system kubernetes-task-manifest kubernetes-plugin-config
 ```
 
-Now we are ready to inject these configMaps to either daemonset or deployment. Let's do this on `swisnap-agent-deployment.yaml`: # FIXMEi udpate difa na kustom i na deploy
+Now we are ready to inject these configMaps to either daemonset or deployment. Let's do this on `swisnap-agent-deployment.yaml`:
 
 ``` diff
 diff --git a/deploy/base/deployment/kustomization.yaml b/deploy/base/deployment/kustomization.yaml
@@ -178,6 +170,7 @@ index 294c4b4..babff7d 100644
          - name: proc
            hostPath:
              path: /proc
+```
 Notice that we're not utilizing [Environment Parameters](###environment-parameters) to turn on Kubernetes plugin. After editing deployment manifest it's time to create it - follow the steps in [Installation](##installation).
 
 ### Environment Parameters
