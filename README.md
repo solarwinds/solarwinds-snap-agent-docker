@@ -30,7 +30,7 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 
 ## Installation
 
-Deployments and Daemonset avialable in this repository expect a `solarwinds-token` secret to exist. You can create this secret via
+Deployments and Daemonset available in this repository expect a `solarwinds-token` secret to exist. You can create this secret via
 ``` bash
 kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
@@ -181,7 +181,7 @@ The following environment parameters are available:
 --------------------------------|---------------------
  APPOPTICS_CUSTOM_TAGS          | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
  SOLARWINDS_TOKEN               | Your SolarWinds token. This parameter is required.
- APPOPTICS_TOKEN                | Deprecieted. Your SolarWinds token. This parameter is used as fallback if SOLARWINDS_TOKEN is not present.
+ APPOPTICS_TOKEN                | Depreciated. Your SolarWinds token. This parameter is used as fallback if SOLARWINDS_TOKEN is not present.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
