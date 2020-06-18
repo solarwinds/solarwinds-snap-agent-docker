@@ -1,3 +1,4 @@
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -20,8 +21,8 @@ spec:
           image: solarwinds/solarwinds-snap-agent-docker:latest
           imagePullPolicy: IfNotPresent
           ports:
-          - containerPort: 21413
-            protocol: TCP
+            - containerPort: 21413
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /v1/plugins
@@ -40,6 +41,13 @@ spec:
                 secretKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
+                  optional: true
+            - name: SOLARWINDS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: solarwinds-token
+                  key: SOLARWINDS_TOKEN
+                  optional: true
           envFrom:
             - configMapRef:
                 name: swisnap-k8s-configmap

@@ -3,9 +3,9 @@ FROM ubuntu:bionic
 LABEL authors='SolarWinds AppOptics team <support@appoptics.com>'
 
 USER root
-ENV DEBIAN_FRONTEND=noninteractive
-
+ARG DEBIAN_FRONTEND=noninteractive
 ARG swisnap_repo=swisnap
+
 RUN apt-get update && \
     apt-get -y install software-properties-common && \
     LC_ALL=C.UTF-8 add-apt-repository -y ppa:rmescandon/yq && \

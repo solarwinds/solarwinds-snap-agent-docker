@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -17,48 +18,55 @@ spec:
         daemon: swisnap-agent-ds
     spec:
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
       containers:
-      - name: swisnap-agent-ds
-        image: solarwinds/solarwinds-snap-agent-docker:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-          - containerPort: 21413
-            protocol: TCP
-        env:
-          - name: APPOPTICS_HOSTNAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: APPOPTICS_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: appoptics-token
-                key: APPOPTICS_TOKEN
-        envFrom:
-          - configMapRef:
-              name: swisnap-host-configmap
-        volumeMounts:
-          - name: docker-sock
-            mountPath: /var/run/docker.sock
-          - name: proc
-            mountPath: /host/proc
-            readOnly: true
-          - name: cgroup
-            mountPath: /sys/fs/cgroup
-        livenessProbe:
-          httpGet:
-            path: /v1/plugins
-            port: 21413
-          initialDelaySeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /v1/plugins
-            port: 21413
-          initialDelaySeconds: 10
-          timeoutSeconds: 5
+        - name: swisnap-agent-ds
+          image: solarwinds/solarwinds-snap-agent-docker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 21413
+              protocol: TCP
+          env:
+            - name: APPOPTICS_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: APPOPTICS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: appoptics-token
+                  key: APPOPTICS_TOKEN
+                  optional: true
+            - name: SOLARWINDS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: solarwinds-token
+                  key: SOLARWINDS_TOKEN
+                  optional: true
+          envFrom:
+            - configMapRef:
+                name: swisnap-host-configmap
+          volumeMounts:
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: cgroup
+              mountPath: /sys/fs/cgroup
+          livenessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /v1/plugins
+              port: 21413
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: docker-sock
           hostPath:
