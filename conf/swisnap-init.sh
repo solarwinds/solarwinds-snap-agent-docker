@@ -10,15 +10,19 @@ PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 
 swisnap_config_setup() {
-    # APPOPTICS_TOKEN is required
-    if [ -z "${APPOPTICS_TOKEN}" ] || [ "${APPOPTICS_TOKEN}" = 'APPOPTICS_TOKEN' ]; then
-        echo "Please set APPOPTICS_TOKEN."
-        exit 1
+    # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
+    if [ -n "${SOLARWINDS_TOKEN}" ] && [ "${SOLARWINDS_TOKEN}" != 'SOLARWINDS_TOKEN' ]; then
+        SWI_TOKEN="${SOLARWINDS_TOKEN}"
+    elif [ -n "${APPOPTICS_TOKEN}" ] && [ "${APPOPTICS_TOKEN}" != 'APPOPTICS_TOKEN' ]; then
+        SWI_TOKEN="${APPOPTICS_TOKEN}"
     else
-        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token "${APPOPTICS_TOKEN}"
-        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token "${APPOPTICS_TOKEN}"
-        yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token "${APPOPTICS_TOKEN}"
+        echo "Please set SOLARWINDS_TOKEN. Exiting"
+        exit 1
     fi
+
+    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token "${SWI_TOKEN}"
+    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token "${SWI_TOKEN}"
+    yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token "${SWI_TOKEN}"
 
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
     yq w -i ${CONFIG_FILE} restapi.addr 0.0.0.0

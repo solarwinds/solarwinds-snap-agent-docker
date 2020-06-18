@@ -30,9 +30,9 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 
 ## Installation
 
-All deployments expect an appoptics-token secret to exist. You can create this secret via
-```
-kubectl create secret generic appoptics-token -n kube-system --from-literal=APPOPTICS_TOKEN=<REPLACE WITH TOKEN>
+Deployments and Daemonset avialable in this repository expect a `solarwinds-token` secret to exist. You can create this secret via
+``` bash
+kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
 
 
@@ -40,7 +40,7 @@ kubectl create secret generic appoptics-token -n kube-system --from-literal=APPO
 
 By default, RBAC is enabled in the deploy manifests. If you are not using RBAC you can deploy [swisnap-agent-deployment.yaml](deploy/base/deployment/swisnap-agent-deployment.yaml) removing the reference to the Service Account.
 
-To deploy the Deployment to Kubernetes verify you have an appoptics-token secret already created and run:
+To deploy the Deployment to Kubernetes verify you have an solarwinds-token secret already created and run:
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/deployment
 ```
@@ -49,7 +49,7 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 ### DaemonSet
 
-The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an appoptics-token secret already created and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an solarwinds-token secret already created and run:
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/daemonset
 ```
@@ -63,7 +63,7 @@ Enable the Docker plugin in the AppOptics UI and you should start seeing data tr
 If you wanted to run containerized SolarWinds Snap Agent with custom taskfiles, you can use following snippets:
 
 ```shell
-docker run -d -e APPOPTICS_TOKEN=token \
+docker run -d -e SOLARWINDS_TOKEN=token \
            -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
            --name swisnap-agent
            solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717
@@ -81,7 +81,7 @@ services:
     volumes:
       - /path/to/my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml
     environment:
-      - APPOPTICS_TOKEN=token
+      - SOLARWINDS_TOKEN=token
 ```
 
 #### Kubernetes
@@ -93,8 +93,8 @@ Add a second container to your deployment YAML underneath `spec.template.spec.co
 - name: zookeeper-ao-sidecar
   image: 'solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717'
   env:
-    - name: APPOPTICS_TOKEN
-      value: APPOPTICS_TOKEN
+    - name: SOLARWINDS_TOKEN
+      value: SOLARWINDS_TOKEN
     - name: SWISNAP_ENABLE_ZOOKEEPER
       value: 'true'
     - name: SWISNAP_DISABLE_HOSTAGENT
@@ -180,7 +180,8 @@ The following environment parameters are available:
  Parameter                      | Description
 --------------------------------|---------------------
  APPOPTICS_CUSTOM_TAGS          | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
- APPOPTICS_TOKEN                | Your AppOptics token. This parameter is required.
+ SOLARWINDS_TOKEN               | Your SolarWinds token. This parameter is required.
+ APPOPTICS_TOKEN                | Deprecieted. Your SolarWinds token. This parameter is used as fallback if SOLARWINDS_TOKEN is not present.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
@@ -285,9 +286,9 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
 
   kubectl describe configmaps -n kube-system plugin-configs task-manifests
   ```
-* Create Kubernetes secret for APPOPTICS_TOKEN
+* Create Kubernetes secret for SOLARWINDS_TOKEN
   ```shell
-  kubectl create secret generic appoptics-token -n kube-system --from-literal=APPOPTICS_TOKEN=<REPLACE WITH TOKEN>
+  kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 * Create Events Collector Deployment (it will automatically create corresponding ServiceAccount)
   ```shell

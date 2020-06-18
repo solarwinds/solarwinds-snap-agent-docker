@@ -40,6 +40,13 @@ spec:
                 secretKeyRef:
                   name: appoptics-token
                   key: APPOPTICS_TOKEN
+                  optional: true
+            - name: SOLARWINDS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: solarwinds-token
+                  key: SOLARWINDS_TOKEN
+                  optional: true
           envFrom:
             - configMapRef:
                 name: swisnap-agent-k8s-events-configmap
