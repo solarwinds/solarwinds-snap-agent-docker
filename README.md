@@ -12,7 +12,7 @@ Docker and Kubernetes assets for running SolarWinds Snap Agent
   * [Configuration](#configuration)
     * [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests)
     * [Environment Parameters](#environment-parameters)
-  * [Events collector](#events-collector)
+  * [Integrating Kubernetes Cluster Events Collection With Loggly](#integrating-kubernetes-cluster-events-collection-with-loggly)
   * [Dashboard](#dashboard)
   * [Development](#development)
 
