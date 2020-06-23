@@ -93,7 +93,7 @@ services:
 
 #### Kubernetes
 
-If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below which use Apache Server as an example. This setup the agent will monitor only services running in particular pod(s), not Kubernetes itself.
+If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below, which use Apache Server as an example. In this setup, the agent will monitor only services running in particular pod(s), not Kubernetes itself.
 
 - Useful when you want to monitor only specific per-pod-services
 - Configuration is similar to pod setup
@@ -202,8 +202,7 @@ index 294c4b4..babff7d 100644
            hostPath:
              path: /proc
 ```
-Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Kubernetes plugin. When you're attaching taskfiles and plugin configuration files through configMaps, there's 
-no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load plugins based on files stored in configMaps.
+Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Kubernetes plugin. When you're attaching taskfiles and plugin configuration files through configMaps, there's no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load plugins based on files stored in configMaps.
 
 ### Environment Parameters
 
