@@ -1,4 +1,4 @@
-DOCKERFILE_VERSION=3.3.0
+DOCKERFILE_VERSION=3.3.1
 SWISNAP_VERSION=3.1.1.717
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
@@ -12,7 +12,7 @@ build:
 
 .PHONY: build-test
 build-test: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap-stg --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-and-release-docker
 build-and-release-docker: build

@@ -51,7 +51,7 @@ run_plugins_with_default_configs() {
     if [ "$SWISNAP_ENABLE_DOCKER" = "true" ]; then
         mv "${PLUGINS_DIR}/docker.yaml.example" "${PLUGINS_DIR}/docker.yaml"
         if [[ -n "${HOST_PROC}" ]]; then
-            sed -i 's,procfs: "/proc",procfs: "'${HOST_PROC}'",g' "${PLUGINS_DIR}/docker.yaml"
+            sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
         fi
     fi
 
@@ -61,6 +61,39 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
         mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+    fi
+
+    if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then
+        NGINX_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx.yaml"
+        mv "${NGINX_CONFIG}.example" "${NGINX_CONFIG}"
+        if [[ -n "${NGINX_STATUS_URI}" ]]; then
+           yq d -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls'
+           for nginx_uri in ${NGINX_STATUS_URI}; do
+               yq w -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls[+]' "${nginx_uri}"
+           done
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_NGINX_PLUS}" = "true" ]; then
+        NGINX_PLUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus.yaml"
+        mv "${NGINX_PLUS_CONFIG}.example" "${NGINX_PLUS_CONFIG}"
+        if [[ -n "${NGINX_PLUS_STATUS_URI}" ]]; then
+           yq d -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls'
+           for nginx_plus_uri in ${NGINX_PLUS_STATUS_URI}; do
+               yq w -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls[+]' "${nginx_plus_uri}"
+           done
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_NGINX_PLUS_API}" = "true" ]; then
+        NGINX_PLUS_API_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus_api.yaml"
+        mv "${NGINX_PLUS_API_CONFIG}.example" "${NGINX_PLUS_API_CONFIG}"
+        if [[ -n "${NGINX_PLUS_API_URI}" ]]; then
+           yq d -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls'
+           for nginx_plus_uri in ${NGINX_PLUS_API_URI}; do
+               yq w -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls[+]' "${nginx_plus_uri}"
+           done
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_MESOS}" = "true" ]; then
@@ -78,6 +111,14 @@ run_plugins_with_default_configs() {
         fi
     fi
 
+    if [ "${SWISNAP_ENABLE_POSTGRESQL}" = "true" ]; then
+        POSTGRES_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-postgres.yaml"
+        mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
+        if [[ -n "${POSTGRES_ADDRESS}" ]]; then
+            yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgres.address' "${POSTGRES_ADDRESS}"
+        fi
+    fi
+
     if [ "${SWISNAP_ENABLE_PROMETHEUS}" = "true" ]; then
         PROMETHEUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-prometheus.yaml"
         mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
@@ -89,6 +130,25 @@ run_plugins_with_default_configs() {
         mv "${PLUGINS_DIR}/rabbitmq.yaml.example" "${PLUGINS_DIR}/rabbitmq.yaml"
     fi
 
+    if [ "${SWISNAP_ENABLE_REDIS}" = "true" ]; then
+        REDIS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-redis.yaml"
+        mv "${REDIS_CONFIG}.example" "${REDIS_CONFIG}"
+        if [[ -n "${REDIS_SERVERS}" ]]; then
+            yq d -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers'
+            for redis_server in ${REDIS_SERVERS}; do
+                yq w -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers[+]' "${redis_server}"
+            done
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_SOCKET_LISTENER}" = "true" ]; then
+        SOCKET_LISTENER_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-socket_listener.yaml"
+        mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
+        if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
+            yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.service_address' "${SOCKET_SERVICE_ADDRESS}"
+            yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.data_format' "${SOCKET_DATA_FORMAT}"
+        fi
+    fi
     if [ "${SWISNAP_ENABLE_STATSD}" = "true" ]; then
         mv "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml"
     fi
@@ -119,11 +179,11 @@ set_custom_tags() {
     fi
 }
 
-
 main() {
     swisnap_config_setup
     run_plugins_with_default_configs
     set_custom_tags
     exec "${SWISNAP_HOME}/sbin/swisnapd" --config "${CONFIG_FILE}" "${FLAGS[@]}"
 }
+
 main
