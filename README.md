@@ -12,7 +12,7 @@ Docker and Kubernetes assets for running SolarWinds Snap Agent
   * [Configuration](#configuration)
     * [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests)
     * [Environment Parameters](#environment-parameters)
-  * [Events collector](#events-collector)
+  * [Integrating Kubernetes Cluster Events Collection With Loggly](#integrating-kubernetes-cluster-events-collection-with-loggly)
   * [Dashboard](#dashboard)
   * [Development](#development)
 
@@ -30,26 +30,33 @@ Alternatively, you can deploy the containerized agent in a sidecar to run the ot
 
 ## Installation
 
-Deployments and Daemonset available in this repository expect a `solarwinds-token` secret to exist. You can create this secret via
+Kubernetes assests available in this repository expect a `solarwinds-token` secret to exist. To create this secret run:
 ``` bash
 kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
-
 
 ### Deployment
 
 By default, RBAC is enabled in the deploy manifests. If you are not using RBAC you can deploy [swisnap-agent-deployment.yaml](deploy/base/deployment/swisnap-agent-deployment.yaml) removing the reference to the Service Account.
 
-To deploy the Deployment to Kubernetes verify you have an solarwinds-token secret already created and run:
+In the `configMapGenerator` section of [kustomization.yaml](deploy/base/deployment/kustomization.yaml)>, you can configure which plugins should be run by setting `SWISNAP_ENABLE_<plugin_name>` to either `true` or `false`. Plugins turned on via environment variables are using default configuration and taskfiles. To see list of plugins currently supported this way please refer to: [Environment Parameters](#environment-parameters). 
+
+After configuring deployment to your needs (please refer to [Configuration](#configuration) and ensuring that `solarwinds-token` secret was already created run:
+
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/deployment
+```
+
+Finally, check if the deployment is running properly:
+``` bash
+kubectl get deployment swisnap-agent-k8s -n kube-system
 ```
 
 Enable the Kubernetes plugin in the AppOptics UI and you should start seeing data trickle in.
 
 ### DaemonSet
 
-The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its node and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an solarwinds-token secret already created and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its nodes and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an `solarwinds-token` secret already created and run:
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/daemonset
 ```
@@ -86,26 +93,50 @@ services:
 
 #### Kubernetes
 
-If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below which use Zookeeper as an example.
+If you wanted to run this on Kubernetes as a sidecar for monitoring specific services, you can follow the instructions below, which use Apache Server as an example. In this setup, the agent will monitor only services running in particular pod(s), not Kubernetes itself.
 
-Add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost`:
+- Useful when you want to monitor only specific per-pod-services
+- Configuration is similar to pod setup
+- In order to monitor specific services only, the `kubernetes` and `aosystem` plugins should be disabled by setting `SWISNAP_ENABLE_KUBERNETES` to `false` and `SWISNAP_DISABLE_HOSTAGENT` to `true` in `swisnap-agent-deployment.yaml`
+
+In order to monitor Apache with the agent in a sidecar, add a second container to your deployment YAML underneath `spec.template.spec.containers` and the agent should now have access to your service over `localhost` (notice `SWISNAP_ENABLE_APACHE`):
+
+Note: Containers inside the same pod can communicate through localhost, so there's no need to pass a static IP - [Resource sharing and communication](https://kubernetes.io/docs/concepts/workloads/pods/pod/#resource-sharing-and-communication)
+
 ``` yaml
-- name: zookeeper-ao-sidecar
-  image: 'solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717'
-  env:
-    - name: SOLARWINDS_TOKEN
-      value: SOLARWINDS_TOKEN
-    - name: SWISNAP_ENABLE_ZOOKEEPER
-      value: 'true'
-    - name: SWISNAP_DISABLE_HOSTAGENT
-      value: 'true'
+        containers:
+        - name: apache
+            imagePullPolicy: Always
+            image: '<your-image>'
+            ports:
+            - containerPort: 80
+        - name: swisnap-agent-ds
+            image: 'solarwinds/solarwinds-snap-agent-docker:1.0.0'
+            imagePullPolicy: Always
+            env:
+            - name: SOLARWINDS_TOKEN
+                value: 'SOLARWINDS_TOKEN'
+            - name: APPOPTICS_HOSTNAME
+                valueFrom:
+                fieldRef:
+                    fieldPath: spec.nodeName
+            - name: SWISNAP_ENABLE_DOCKER
+                value: 'false'
+            - name: SWISNAP_ENABLE_APACHE
+                value: 'true'
+            - name: SWISNAP_DISABLE_HOSTAGENT
+                value: 'true'
+            - name: HOST_PROC
+                value: '/host/proc'
 ```
+
+In the example above, the sidecar will run only the Apache plugin. Additionally, if the default [Apache Plugin](https://docs.appoptics.com/kb//host_infrastructure/integrations/apache/) configuration is not sufficient, custom one should be passed to pod running SolarWinds Snap Agent - [Configuration](#configuration).
 
 ## Configuration
 
 ### Custom plugins configuration and tasks manifests
 
-Host Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
+SolarWinds Snap Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
 
 ``` bash
 # create plugin configMap
@@ -118,7 +149,7 @@ kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.
 kubectl describe configmaps --namespace=kube-system kubernetes-task-manifest kubernetes-plugin-config
 ```
 
-Now we are ready to inject these configMaps to either daemonset or deployment. Let's do this on `swisnap-agent-deployment.yaml`:
+ConfigMaps should be attached to SolarWinds Snap Agent deployment. Here's the example, notice `spec.template.spec.containers.volumeMounts` and `spec.template.spec.volumes`:
 
 ``` diff
 diff --git a/deploy/base/deployment/kustomization.yaml b/deploy/base/deployment/kustomization.yaml
@@ -171,7 +202,7 @@ index 294c4b4..babff7d 100644
            hostPath:
              path: /proc
 ```
-Notice that we're not utilizing [Environment Parameters](###environment-parameters) to turn on Kubernetes plugin. After editing deployment manifest it's time to create it - follow the steps in [Installation](##installation).
+Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Kubernetes plugin. When you're attaching taskfiles and plugin configuration files through configMaps, there's no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load plugins based on files stored in configMaps.
 
 ### Environment Parameters
 
@@ -186,8 +217,8 @@ The following environment parameters are available:
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
  SWISNAP_SECURE                 | Set this to `true` to run only signed plugins.
- SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the Host Agent system metrics collection.
- SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the Host Agent processes metrics collection.
+ SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the SolarWinds Snap Agent system metrics collection.
+ SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the SolarWinds Snap Agent processes metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
@@ -202,10 +233,10 @@ The following environment parameters are available:
 
 If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that SolarWinds Snap Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests).
 
-## Events collector
+## Integrating Kubernetes Cluster Events Collection With Loggly
 
-Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To enable event collection in your deployment, follow these easy steps:
-* Create `kubernetes.yaml` file that will configure kubernetes collector. This config should contain `collector.kubernetes.all.events` field with specified filter. Following example config will watch for normal events in default namespace:
+Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To enable event collection in your deployment, follow below steps:
+* Create `kubernetes.yaml` file that will configure kubernetes collector. This config should contain `collector.kubernetes.all.events` field with specified filter. Following example config will watch for `normal` events in `default` namespace:
   ```yaml
   collector:
     kubernetes:
@@ -286,11 +317,11 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
 
   kubectl describe configmaps -n kube-system plugin-configs task-manifests
   ```
-* Create Kubernetes secret for SOLARWINDS_TOKEN
+* Create Kubernetes secret for `SOLARWINDS_TOKEN`:
   ```shell
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
-* Create Events Collector Deployment (it will automatically create corresponding ServiceAccount)
+* Create Events Collector Deployment (it will automatically create corresponding ServiceAccount):
   ```shell
   kubectl apply -k ./deploy/overlays/stable/events-collector/
   ```
