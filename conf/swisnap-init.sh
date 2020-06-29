@@ -71,6 +71,8 @@ run_plugins_with_default_configs() {
            for nginx_uri in ${NGINX_STATUS_URI}; do
                yq w -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls[+]' "${nginx_uri}"
            done
+        else
+            echo "WARNING: NGINX_STATUS_URI var was not set for Nginx plugin"
         fi
     fi
 
@@ -82,6 +84,8 @@ run_plugins_with_default_configs() {
            for nginx_plus_uri in ${NGINX_PLUS_STATUS_URI}; do
                yq w -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls[+]' "${nginx_plus_uri}"
            done
+        else
+            echo "WARNING: NGINX_PLUS_STATUS_URI var was not set for Nginx Plus plugin"
         fi
     fi
 
@@ -93,6 +97,8 @@ run_plugins_with_default_configs() {
            for nginx_plus_uri in ${NGINX_PLUS_API_URI}; do
                yq w -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls[+]' "${nginx_plus_uri}"
            done
+        else
+            echo "WARNING: NGINX_PLUS_API_URI var was not set for Nginx Plus Api plugin"
         fi
     fi
 
@@ -108,6 +114,8 @@ run_plugins_with_default_configs() {
         mv "${PLUGINS_DIR}/mysql.yaml.example" "${PLUGINS_DIR}/mysql.yaml"
         if [[ -n "${MYSQL_USER}" && -n "${MYSQL_HOST}" && -n "${MYSQL_PORT}" ]]; then
             yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
+        else
+            echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
         fi
     fi
 
@@ -116,6 +124,8 @@ run_plugins_with_default_configs() {
         mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
         if [[ -n "${POSTGRES_ADDRESS}" ]]; then
             yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgres.address' "${POSTGRES_ADDRESS}"
+        else
+            echo "WARNING: POSTGRES_ADDRESS var was not set for Postgres plugin."
         fi
     fi
 
@@ -138,6 +148,8 @@ run_plugins_with_default_configs() {
             for redis_server in ${REDIS_SERVERS}; do
                 yq w -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers[+]' "${redis_server}"
             done
+        else
+            echo "WARNING: REDIS_SERVERS var was not set for Redis plugin."
         fi
     fi
 
@@ -145,8 +157,11 @@ run_plugins_with_default_configs() {
         SOCKET_LISTENER_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-socket_listener.yaml"
         mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
         if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
+            echo "INFO: setting service_address for Socket Listener plugin to ${SOCKET_SERVICE_ADDRESS} and data format to ${SOCKET_DATA_FORMAT}"
             yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.service_address' "${SOCKET_SERVICE_ADDRESS}"
             yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.data_format' "${SOCKET_DATA_FORMAT}"
+        else
+            echo "WARNING: both SOCKET_SERVICE_ADDRESS and SOCKET_DATA_FORMAT needs to be set for socket listener plugin"
         fi
     fi
     if [ "${SWISNAP_ENABLE_STATSD}" = "true" ]; then
