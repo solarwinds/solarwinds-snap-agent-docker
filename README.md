@@ -223,11 +223,17 @@ The following environment parameters are available:
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
+ SWISNAP_ENABLE_NGINX           | Set this to `true` to enable the Nginx plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx stub_status URI.
+ SWISNAP_ENABLE_NGINX_PLUS      | Set this to `true` to enable the Nginx Plus plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to ngx_http_status_module or status URI.
+ SWISNAP_ENABLE_NGINX_PLUS_API  | Set this to `true` to enable the Nginx Plus Api plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx API URI.
  SWISNAP_ENABLE_MESOS           | Set this to `true` to enable the Mesos plugin.
  SWISNAP_ENABLE_MONGODB         | Set this to `true` to enable the MongoDB plugin.
- SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set as well: MYSQL_USER, MYSQL_PASS, MYSQL_HOST & MYSQL_PORT
- SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable prometheus pod annotation scrapping
+ SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set:<br>*MYSQL_USER*,<br>*MYSQL_PASS*,<br>*MYSQL_HOST*<br>*MYSQL_PORT*
+ SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable the Prometheus pod annotation scrapping
+ SWISNAP_ENABLE_POSTGRESQL      | Set this to `true` to enable the Postgres plugin.  If enabled the following ENV vars are required to be set:<br>*POSTGRES_ADDRESS* - specify address for Postgres databse
  SWISNAP_ENABLE_RABBITMQ        | Set this to `true` to enable the RabbitMQ plugin.
+ SWISNAP_ENABLE_REDIS           | Set this to `true` to enable the Redis plugin. If enabled the following ENV vars are required to be set:<br>*REDIS_SERVERS* - one, or multiple space-separeted link(s) to Redis servers
+ SWISNAP_ENABLE_SOCKET_LISTENER | Set this to `true` to enable the Socket Listener plugin. If enabled the following ENV vars are required to be set:<br>*SOCKET_SERVICE_ADDRESS* - URL to listen on,<br>*SOCKET_LISTENER_FORMAT* - Data format to consume: "collectd", "graphite", "influx", "json", or "value".
  SWISNAP_ENABLE_STATSD          | Set this to `true` to enable the Statsd plugin.
  SWISNAP_ENABLE_ZOOKEEPER       | Set this to `true` to enable the Zookeeper plugin.
 
