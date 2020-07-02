@@ -120,10 +120,10 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_ENABLE_POSTGRESQL}" = "true" ]; then
-        POSTGRES_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-postgres.yaml"
+        POSTGRES_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-postgresql.yaml"
         mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
         if [[ -n "${POSTGRES_ADDRESS}" ]]; then
-            yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgres.address' "${POSTGRES_ADDRESS}"
+            yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgresql.address' "${POSTGRES_ADDRESS}"
         else
             echo "WARNING: POSTGRES_ADDRESS var was not set for Postgres plugin."
         fi
