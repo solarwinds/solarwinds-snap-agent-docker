@@ -240,7 +240,7 @@ The following environment parameters are available:
 If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that SolarWinds Snap Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests).
 
 ## Integrating Kubernetes Cluster Events Collection With Loggly
-
+This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
 Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To utilise this functionality there is a need to create corresponding configmaps in your cluster, with proper plugins configration. Those files can be found in  [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
