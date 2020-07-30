@@ -272,42 +272,42 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
   ```
 * [task-logs-k8s.yaml](examples/event-collector-configs/logs-v2.yaml) file configures the logs collector plugin. It is telling logs collector to look for `/var/log/SolarWinds/Snap/events.log` file:
   ```
-    ---
-    version: 2
-    
-    schedule:
-      type: cron
-      interval: "0 * * * * *"
-    
-    plugins:
-      - plugin_name: logs
-    
-        metrics:
-          - /logs/lines_total
-          - /logs/lines_forwarded
-          - /logs/bytes_forwarded
-          - /logs/lines_skipped
-          - /logs/lines_failed
-          - /logs/bytes_failed
-          - /logs/lines_succeeded
-          - /logs/bytes_succeeded
-          - /logs/attempts_total
-          - /logs/failed_attempts_total
-    
-        config:
-          sources:
-            log_files:
-    
-              # [...]
-              file_paths:
-                - Path: /var/log/SolarWinds/Snap/events.log
-    
-              # [...]
-              exclude_lines_patterns:
-                - ".*self-skip-logs-collector.*"
-    
-        publish:
-          - plugin_name: publisher-appoptics
+  ---
+  version: 2
+
+  schedule:
+    type: cron
+    interval: "0 * * * * *"
+
+  plugins:
+    - plugin_name: logs
+
+      metrics:
+        - /logs/lines_total
+        - /logs/lines_forwarded
+        - /logs/bytes_forwarded
+        - /logs/lines_skipped
+        - /logs/lines_failed
+        - /logs/bytes_failed
+        - /logs/lines_succeeded
+        - /logs/bytes_succeeded
+        - /logs/attempts_total
+        - /logs/failed_attempts_total
+
+      config:
+        sources:
+          log_files:
+
+            # [...]
+            file_paths:
+              - Path: /var/log/SolarWinds/Snap/events.log
+
+            # [...]
+            exclude_lines_patterns:
+              - ".*self-skip-logs-collector.*"
+
+      publish:
+        - plugin_name: publisher-appoptics
   ```
 
 * [kubernetes.yaml](examples/event-collector-configs/kubernetes.yaml) file configures the kubernetes collector plugin. This config contain `collector.kubernetes.all.events` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace.
@@ -318,20 +318,20 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
         incluster: true
         kubeconfigpath: ""
         interval: "60s"
-  
+
         events: |
           # Embedded YAML (as a multiline string literal)
           filters:
           - namespace: default
             type: normal
-  
+
         grpc_timeout: 30
-  
+
   load:
     plugin: snap-plugin-collector-aokubernetes
     task: task-aokubernetes.yaml
   ```
-* If you want to monitor events count in AppOptics, then edit [task-aokubernetes.yaml](xamples/event-collector-configs/task-aokubernetes.yaml) task manifest so it contains `/kubernetes/events/count` metric in `workflow.collect.metrics` list, and copy it to working directory:
+* If you want to monitor events count in AppOptics, then edit [task-aokubernetes.yaml](examples/event-collector-configs/task-aokubernetes.yaml) task manifest so it contains `/kubernetes/events/count` metric in `workflow.collect.metrics` list, and copy it to working directory:
   ```yaml
   ---
   version: 1
