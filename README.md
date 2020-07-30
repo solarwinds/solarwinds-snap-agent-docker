@@ -248,7 +248,7 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 * Update Loggly Token in [logs-v2.yaml](examples/event-collector-configs/logs-v2.yaml) file.
-* [kubernetes.yaml]((examples/event-collector-configs/kubernetes.yaml) file configure kubernetes collector. This config contain `collector.kubernetes.all.events` field with specified filter.  This example config will watch for `normal` events in `default` namespace.
+* [kubernetes.yaml](examples/event-collector-configs/kubernetes.yaml) file configure kubernetes collector. This config contain `collector.kubernetes.all.events` field with specified filter.  With this example filter event collector will watch for `normal` events in `default` namespace.
 * Once above steps are finished, create 3 configmaps:
   ```shell
   kubectl create configmap plugin-configs --from-file=./examples/event-collector-configs/logs-v2.yaml --from-file=./examples/event-collector-configs/kubernetes.yaml --namespace=kube-system
