@@ -241,7 +241,7 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 
 ## Integrating Kubernetes Cluster Events Collection With Loggly
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
-Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To utilise this functionality there is a need to create corresponding configmaps in your cluster, with proper plugins configration. The example config files can be found in  [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
+Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper plugins configuration. The example config files can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
   ```shell
@@ -270,7 +270,7 @@ Version 22 of Kubernetes collector allows you to collect cluster events and push
               protocol: tls
   
   ```
-* [task-logs-k8s.yaml](examples/event-collector-configs/logs-v2.yaml) file configures the logs collector plugin. It is telling logs collector to look for `/var/log/SolarWinds/Snap/events.log` file:
+* [task-logs-k8s.yaml](examples/event-collector-configs/task-logs-k8s.yaml) file configures the logs collector plugin. It is telling logs collector to look for `/var/log/SolarWinds/Snap/events.log` file:
   ```
   ---
   version: 2
