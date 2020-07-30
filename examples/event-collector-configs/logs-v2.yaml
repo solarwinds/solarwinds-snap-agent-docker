@@ -1,0 +1,54 @@
+v2:
+  collector:
+    logs:
+      all:
+
+        sources:
+          ## Define common settings for Loggly or Papertrail.
+          common:
+
+            ## Maximum line length to be written at once (in utf-8 characters)
+            ## 0 means no limit
+            ## 1024 is the default
+            #max_line_length: 1024
+
+        ## Tail and send logs from this host to Loggly or Papertrail.
+        ## Loggly and Papertrail are also from the SolarWinds DevOps Cloud Product Family Suite.
+        logging_service:
+
+          ## Override the hostname used for logs reported by this agent. Defaults to the OS-provided hostname.
+          #hostname: "myhost"
+
+          timeouts:
+
+            ## A timeout for connecting to logs-accepting API
+            #connect: 30s
+
+            ## A timeout for writing to logs-accepting API
+            #write: 30s
+
+          ## Sign up for a Loggly account at: https://www.loggly.com
+          loggly:
+
+            ## Loggly API token and host
+            token: "LOGGLY_TOKEN
+            host: "logs-01.loggly.com"
+
+            ## Loggly API port and protocol
+            ## use 6514 with TLS or 514 with TCP
+            port: 6514
+            protocol: tls
+
+            ## Path to Loggly public CA certificate. See https://www.loggly.com/docs/rsyslog-tls-configuration/ for reference.
+            ## Uncomment this line if you want to use custom host certificate store.
+            # ca_certificate_path: /path/to/your/certificate
+
+          ## Sign up for a Papertrail account at: https://papertrailapp.com
+          #papertrail:
+            ## Papertrail API token
+            #token: "PAPERTRAIL_TOKEN"
+
+            ## Papertrail host and port details: change this to YOUR papertrail host.
+            #host: "HOST.papertrailapp.com"
+            #port: 12345
+            #protocol: tls
