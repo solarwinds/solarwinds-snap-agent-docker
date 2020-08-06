@@ -20,9 +20,9 @@ swisnap_config_setup() {
         exit 1
     fi
 
-    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token "${SWI_TOKEN}"
-    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token "${SWI_TOKEN}"
-    yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token "${SWI_TOKEN}"
+    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token -- "${SWI_TOKEN}"
+    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
+    yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
 
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
     yq w -i ${CONFIG_FILE} restapi.addr 0.0.0.0
