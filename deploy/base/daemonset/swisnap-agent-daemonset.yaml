@@ -55,6 +55,13 @@ spec:
               readOnly: true
             - name: cgroup
               mountPath: /sys/fs/cgroup
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           livenessProbe:
             httpGet:
               path: /v1/plugins

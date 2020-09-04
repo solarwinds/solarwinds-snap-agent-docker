@@ -7,7 +7,7 @@ Docker and Kubernetes assets for running SolarWinds Snap Agent
   * [About](#about)
   * [Installation](#installation)
     * [Deployment](#deployment)
-    * [DaemonSet](daemonset)
+    * [DaemonSet](#daemonset)
     * [Sidecar](#sidecar)
   * [Configuration](#configuration)
     * [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests)
