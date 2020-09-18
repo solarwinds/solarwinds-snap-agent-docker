@@ -72,8 +72,8 @@ If you wanted to run containerized SolarWinds Snap Agent with custom taskfiles, 
 ```shell
 docker run -d -e SOLARWINDS_TOKEN=token \
            -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
-           --name swisnap-agent
-           solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717
+           --name swisnap-agent \
+           solarwinds/solarwinds-snap-agent-docker:latest
 ```
 
 or using docker-compose:
@@ -82,7 +82,7 @@ or using docker-compose:
 version: '3'
 services:
   swisnap:
-    image: solarwinds/solarwinds-snap-agent-docker:3.3.0-3.1.1.717
+    image: solarwinds/solarwinds-snap-agent-docker:latest
     hostname: swisnap-agent
     container_name: swisnap-agent
     volumes:
@@ -111,7 +111,7 @@ Note: Containers inside the same pod can communicate through localhost, so there
             ports:
             - containerPort: 80
         - name: swisnap-agent-ds
-            image: 'solarwinds/solarwinds-snap-agent-docker:1.0.0'
+            image: 'solarwinds/solarwinds-snap-agent-docker:latest'
             imagePullPolicy: Always
             env:
             - name: SOLARWINDS_TOKEN

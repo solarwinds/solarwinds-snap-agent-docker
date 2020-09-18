@@ -189,7 +189,7 @@ set_custom_tags() {
         for TAG in ${APPOPTICS_CUSTOM_TAGS}; do
             KEY=${TAG%%=*}
             VALUE=${TAG##*=}
-            yq w -i ${CONFIG_FILE} "control.tags.\"/\"[\"${KEY}\"]" "\"${VALUE}\""
+            yq w -i ${CONFIG_FILE} "control.tags./[${KEY}]" "${VALUE}"
         done
     fi
 }
