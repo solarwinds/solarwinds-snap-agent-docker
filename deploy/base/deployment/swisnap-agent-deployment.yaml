@@ -25,14 +25,14 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /v1/plugins
               port: 21413
+              path: /v1/plugins
             initialDelaySeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /v1/plugins
               port: 21413
+              path: /v1/plugins
             initialDelaySeconds: 10
             timeoutSeconds: 5
           env:
