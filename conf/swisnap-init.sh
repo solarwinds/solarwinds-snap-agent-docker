@@ -33,6 +33,8 @@ swisnap_config_setup() {
 
     if [ "${SWISNAP_SECURE}" = true ]; then
         FLAGS=("--keyring-paths" "${SWISNAP_HOME}/.gnupg/")
+    else
+        yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
     fi
 
     # Use APPOPTICS_HOSTNAME as hostname_alias
