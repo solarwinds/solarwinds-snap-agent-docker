@@ -2,7 +2,7 @@
 # chris.rust@solarwinds.com - 20180227
 set -e
 
-SWISNAP_HOME="/opt/SolarWinds/Snap/"
+SWISNAP_HOME="/opt/SolarWinds/Snap"
 PLUGINS_DIR="${SWISNAP_HOME}/etc/plugins.d"
 TASK_AUTOLOAD_DIR="${SWISNAP_HOME}/etc/tasks-autoload.d"
 CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
@@ -25,15 +25,16 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
 
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
-    yq w -i ${CONFIG_FILE} restapi.addr 0.0.0.0
+    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
 
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
     fi
 
     if [ "${SWISNAP_SECURE}" = true ]; then
-        yq w -i ${CONFIG_FILE} control.plugin_trust_level 1
         FLAGS=("--keyring-paths" "${SWISNAP_HOME}/.gnupg/")
+    else
+        yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
     fi
 
     # Use APPOPTICS_HOSTNAME as hostname_alias
