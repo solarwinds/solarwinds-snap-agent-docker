@@ -141,15 +141,15 @@ In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs fr
 This option is not enabled by default, it have to be turn on to start working. 
 
 
-Create `solarwinds-token` secret in your cluster. To create it  run:
+* Create `solarwinds-token` secret in your cluster. To create it run:
 ``` bash
 kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
-(Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
+* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
 ``` bash
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 ```
-Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
+* Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
 ```diff
 --- a/deploy/overlays/stable/daemonset/kustomization.yaml
 +++ b/deploy/overlays/stable/daemonset/kustomization.yaml
@@ -164,12 +164,12 @@ Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kust
    - name: solarwinds/solarwinds-snap-agent-docker
 ```
 
-Create DaemonSet in your cluster.
+* Create DaemonSet in your cluster.
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/daemonset
 ```
 
-After a while you should start seeing Docker logs lines trickle in your Loggly organization.
+* After a while you should start seeing Docker logs lines in your Loggly organization.
 
 ### Custom plugins configuration and tasks manifests
 
@@ -281,125 +281,52 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 
 ## Integrating Kubernetes Cluster Events Collection With Loggly
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
-Version 22 of Kubernetes collector allows you to collect cluster events and push them to Loggly using logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper plugins configuration. The example config files can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
+Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly usingi embedded logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
   ```shell
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 
-* Update Loggly Token in [logs-v2.yaml](examples/event-collector-configs/logs-v2.yaml) file under `v2:collector:logs:all:logging_service:loggly:token`.
+* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step, in that case `SOLARWINDS_TOKEN`, created in 1st step will be used by Loggly Publisher plugin.
+``` bash
+kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+```
+* [task-logs-k8s-events.yaml](examples/event-collector-configs/task-logs-k8s-events.yaml) file configures the Kubernetes Events Log task. This config contains `plugins.config.filters` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace. Depending on your needs, you can modify this filter to monitor other event types, or other namespaces.
+
   ```yaml
-  v2:
-    collector:
-      logs:
-        all:
-          #  [...]
-          logging_service:
-            # [..]
-            ## Sign up for a Loggly account at: https://www.loggly.com
-            loggly:
-  
-              ## Loggly API token and host
-              token: "LOGGLY_TOKEN
-              host: "logs-01.loggly.com"
-  
-              ## Loggly API port and protocol
-              ## use 6514 with TLS or 514 with TCP
-              port: 6514
-              protocol: tls
-  
-  ```
-* [task-logs-k8s.yaml](examples/event-collector-configs/task-logs-k8s.yaml) file configures the logs collector plugin. It is telling logs collector to look for `/var/log/SolarWinds/Snap/events.log` file:
-  ```
-  ---
   version: 2
-
-  schedule:
-    type: cron
-    interval: "0 * * * * *"
-
-  plugins:
-    - plugin_name: logs
-
-      metrics:
-        - /logs/lines_total
-        - /logs/lines_forwarded
-        - /logs/bytes_forwarded
-        - /logs/lines_skipped
-        - /logs/lines_failed
-        - /logs/bytes_failed
-        - /logs/lines_succeeded
-        - /logs/bytes_succeeded
-        - /logs/attempts_total
-        - /logs/failed_attempts_total
-
-      config:
-        sources:
-          log_files:
-
-            # [...]
-            file_paths:
-              - Path: /var/log/SolarWinds/Snap/events.log
-
-            # [...]
-            exclude_lines_patterns:
-              - ".*self-skip-logs-collector.*"
-
-      publish:
-        - plugin_name: publisher-appoptics
-  ```
-
-* [kubernetes.yaml](examples/event-collector-configs/kubernetes.yaml) file configures the kubernetes collector plugin. This config contain `collector.kubernetes.all.events` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace.
-  ```yaml
-  collector:
-    kubernetes:
-      all:
-        incluster: true
-        kubeconfigpath: ""
-        interval: "60s"
-
-        events: |
-          # Embedded YAML (as a multiline string literal)
-          filters:
-          - namespace: default
-            type: normal
-
-        grpc_timeout: 30
-
-  load:
-    plugin: snap-plugin-collector-aokubernetes
-    task: task-aokubernetes.yaml
-  ```
-* If you want to monitor events count in AppOptics, then edit [task-aokubernetes.yaml](examples/event-collector-configs/task-aokubernetes.yaml) task manifest so it contains `/kubernetes/events/count` metric in `workflow.collect.metrics` list, and copy it to working directory:
-  ```yaml
-  ---
-  version: 1
+  
   schedule:
     type: streaming
-  deadline: "55s"
-  workflow:
-    collect:
+  
+  plugins:
+    - plugin_name: k8s-events
       config:
-        /kubernetes:
-          MaxCollectDuration: "2s"
-          MaxMetricsBuffer: 250
-      metrics:
-        /kubernetes/events/count: {}
-        /kubernetes/pod/*/*/*/status/phase/Running: {}
+        incluster: true
+  
+        filters:
+        - namespace: default
+          watch_only: true
+          options:
+            fieldSelector: "type==Normal"
+        #- namespace: kube-system
+        #  watch_only: true
+        #  options:
+        #    fieldSelector: "type==Warning"
+  
+      #tags:
+      #  /k8s-events/[namespace=my_namespace]/string_line:
+      #    sometag: somevalue
+  
       publish:
-      - plugin_name: publisher-appoptics
-        config:
-          period: 60
-          floor_seconds: 60
+        - plugin_name: loggly-http-bulk
   ```
-* Once above steps are finished, create 3 configmaps:
+* Once above steps are finished, create corresponding configmap:
   ```shell
-  kubectl create configmap plugin-configs --from-file=./examples/event-collector-configs/logs-v2.yaml --from-file=./examples/event-collector-configs/kubernetes.yaml --namespace=kube-system
-  kubectl create configmap task-manifests --from-file=./examples/event-collector-configs/task-aokubernetes.yaml --namespace=kube-system
-  kubectl create configmap task-autoload --from-file=./examples/event-collector-configs/task-logs-k8s.yaml --namespace=kube-system
+  kubectl create configmap task-autoload --from-file=./examples/event-collector-configs/task-logs-k8s-events.yaml --namespace=kube-system
 
-  kubectl describe configmaps -n kube-system plugin-configs task-manifests task-autoload
+  kubectl describe configmaps -n kube-system task-autoload
   ```
 * Create Events Collector Deployment (it will automatically create corresponding ServiceAccount):
   ```shell

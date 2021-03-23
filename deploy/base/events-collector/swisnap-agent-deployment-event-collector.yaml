@@ -22,18 +22,9 @@ spec:
           image: 'solarwinds/solarwinds-snap-agent-docker:latest'
           imagePullPolicy: IfNotPresent
           volumeMounts:
-            - name: plugins-logs
-              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/logs-v2.yaml
-              subPath: logs-v2.yaml
-            - name: plugins-kubernetes
-              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/kubernetes.yaml
-              subPath: kubernetes.yaml
-            - name: tasks-aokubernetes
-              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-aokubernetes.yaml
-              subPath: task-aokubernetes.yaml
-            - name: tasks-autoload-logs
-              mountPath: /opt/SolarWinds/Snap/etc/tasks-autoload.d/task-logs-k8s.yaml
-              subPath: task-logs-k8s.yaml
+            - name: task-logs-k8s-events
+              mountPath: /opt/SolarWinds/Snap/etc/tasks-autoload.d/task-logs-k8s-events.yaml
+              subPath: task-logs-k8s-events.yaml 
           env:
             - name: APPOPTICS_TOKEN
               valueFrom:
@@ -47,6 +38,11 @@ spec:
                   name: solarwinds-token
                   key: SOLARWINDS_TOKEN
                   optional: true
+            - name: LOGGLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: loggly-token
+                  key: LOGGLY_TOKEN
           envFrom:
             - configMapRef:
                 name: swisnap-agent-k8s-events-configmap
@@ -70,30 +66,12 @@ spec:
             initialDelaySeconds: 5
             timeoutSeconds: 5
       volumes:
-        - name: plugins-logs
-          configMap:
-            name: plugin-configs
-            items:
-              - key: logs-v2.yaml
-                path: logs-v2.yaml
-        - name: plugins-kubernetes
-          configMap:
-            name: plugin-configs
-            items:
-              - key: kubernetes.yaml
-                path: kubernetes.yaml
-        - name: tasks-autoload-logs
+        - name: task-logs-k8s-events
           configMap:
             name: task-autoload
             items:
-              - key: task-logs-k8s.yaml
-                path: task-logs-k8s.yaml
-        - name: tasks-aokubernetes
-          configMap:
-            name: task-manifests
-            items:
-              - key: task-aokubernetes.yaml
-                path: task-aokubernetes.yaml
+              - key: task-logs-k8s-events.yaml 
+                path: task-logs-k8s-events.yaml
   strategy:
     type: RollingUpdate
     rollingUpdate:

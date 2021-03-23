@@ -1,0 +1,38 @@
+---
+version: 2
+
+schedule:
+  type: streaming
+
+plugins:
+  - plugin_name: k8s-events
+
+    config:
+      ## Configure k8s events collection:
+      ## - "incluster" (defaults to false) defines if collector is running next to the k8s cluster (kubeconfigpath must be provided) or inside container.
+      ## - "kubeconfigpath" (defaults to for unix "~/.kube/config", for windows "%USERPROFILE%/.kube/config") defines paths to the k8s configuration if collector is running next to the k8s cluster.
+      ## - "filters" defines filters which will be used to get interesting events.
+      ##    "watch_only" (defaults to true) defines if collector should watch only new events, without listing/getting stored ones.
+      ##    Namespace default and type normal are default values for the filter.
+      ##    Please take in mind, that collecting all events from kubernetes cluster can generate significant load, so tune your selections.
+      ##    More about filter fields can be found here: https://documentation.solarwinds.com/en/Success_Center/appoptics/content/kb/host_infrastructure/integrations/kubernetes.htm#configuration
+
+      incluster: true
+      #kubeconfigpath: "~/.kube/config"
+
+      filters:
+      - namespace: default
+        watch_only: true
+        options:
+          fieldSelector: "type==Normal"
+      - namespace: kube-system
+        watch_only: true
+      #  options:
+      #    fieldSelector: "type==Warning"
+
+    #tags:
+    #  /k8s-events/[namespace=my_namespace]/string_line:
+    #    sometag: somevalue
+
+    publish:
+      - plugin_name: loggly-http-bulk

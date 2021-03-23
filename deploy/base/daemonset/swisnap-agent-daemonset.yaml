@@ -49,7 +49,6 @@ spec:
                 secretKeyRef:
                   name: loggly-token
                   key: LOGGLY_TOKEN
-                  optional: true
           envFrom:
             - configMapRef:
                 name: swisnap-host-configmap
