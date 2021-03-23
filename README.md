@@ -75,7 +75,7 @@ docker run -d -e SOLARWINDS_TOKEN=token \
            -v my_custom_statsd.yaml:/opt/SolarWinds/Snap/etc/plugins.d/statsd.yaml \
            --name swisnap-agent \
            solarwinds/solarwinds-snap-agent-docker:latest
-<F7>```
+```
 
 or using docker-compose:
 
@@ -137,7 +137,7 @@ In the example above, the sidecar will run only the Apache plugin. Additionally,
 
 ### Enabling Docker Logs collector from Kubernetes nodes
 
-In this configuration SolarWinds Snap Agent DeamonSet will gather Docker logs from underlaying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics).
+In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs from underlaying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics).
 This option is not enabled by default, it have to be turn on to start working. 
 
 
@@ -149,19 +149,19 @@ kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOL
 ``` bash
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 ```
-Set `SWISNAP_ENABLE_DOCKER_LOGS` to true in DeamonSet [kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
+Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
 ```diff
 --- a/deploy/overlays/stable/daemonset/kustomization.yaml
 +++ b/deploy/overlays/stable/daemonset/kustomization.yaml
 @@ -10,7 +10,7 @@ configMapGenerator:
    - name: swisnap-host-configmap
-        behavior: merge
-             literals:
-             -      - SWISNAP_ENABLE_DOCKER_LOGS=false
-             +      - SWISNAP_ENABLE_DOCKER_LOGS=true
-              
-               images:
-                  - name: solarwinds/solarwinds-snap-agent-docker
+     behavior: merge
+     literals:
+-      - SWISNAP_ENABLE_DOCKER_LOGS=false
++      - SWISNAP_ENABLE_DOCKER_LOGS=true
+ 
+ images:
+   - name: solarwinds/solarwinds-snap-agent-docker
 ```
 
 Create DaemonSet in your cluster.
@@ -258,8 +258,8 @@ The following environment parameters are available:
  SWISNAP_SECURE                 | Set this to `true` to run only signed plugins.
  SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the SolarWinds Snap Agent system metrics collection.
  SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the SolarWinds Snap Agent processes metrics collection.
- SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin. This requires Docker socket mounted inside container (done by default in DeamonSet).
- SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. This requires Docker socket mounted inside container (done by default in DeamonSet).
+ SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin. This requires Docker socket mounted inside container (done by default in DaemonSet).
+ SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. This requires Docker socket mounted inside container (done by default in DaemonSet).
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
