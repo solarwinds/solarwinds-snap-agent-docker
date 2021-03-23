@@ -183,10 +183,10 @@ SolarWinds Snap Agent image is using default plugins configuration files and tas
   ``` bash
   # create plugin configMap
   kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
-  
+
   # create task configMap
   kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
-  
+
   # check if everything is fine
   kubectl describe configmaps --namespace=kube-system kubernetes-task-manifest kubernetes-plugin-config
   ```
@@ -304,15 +304,15 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
 
   ```yaml
   version: 2
-  
+
   schedule:
     type: streaming
-  
+
   plugins:
     - plugin_name: k8s-events
       config:
         incluster: true
-  
+
         filters:
         - namespace: default
           watch_only: true
@@ -322,21 +322,62 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
         #  watch_only: true
         #  options:
         #    fieldSelector: "type==Warning"
-  
+
       #tags:
       #  /k8s-events/[namespace=my_namespace]/string_line:
       #    sometag: somevalue
-  
+
       publish:
         - plugin_name: loggly-http-bulk
   ```
 
-* Once above steps are finished, create corresponding configmap:
+* If you want to monitor events count in AppOptics, then you can use [task-aokubernetes.yaml](#examples/event-collector-configs/task-aokubernetes.yaml) task manifest and corresponding plugin config [kubernetes.yaml](examples/event-collector-configs/kubernetes.yaml). Task configuration contains `kubernetes/events/count` metric in `workflow.collect.metrics` list. 
+
+  `task-aokubernetes.yaml` task file:
+  ```yaml
+  ---
+  version: 1
+  schedule:
+    type: streaming
+  deadline: "55s"
+  workflow:
+    collect:
+      config:
+        /kubernetes:
+          MaxCollectDuration: "2s"
+          MaxMetricsBuffer: 250
+      metrics:
+        /kubernetes/events/count: {}
+        /kubernetes/pod/*/*/*/status/phase/Running: {}
+      publish:
+      - plugin_name: publisher-appoptics
+        config:
+          period: 60
+          floor_seconds: 60
+  ```
+
+  `kubernetes.yaml` plugin config:
+
+  ```yaml
+  collector:
+    kubernetes:
+      all:
+        incluster: true
+        kubeconfigpath: ""
+        interval: "60s"
+        grpc_timeout: 30
+  load:
+    plugin: snap-plugin-collector-aokubernetes
+    task: task-aokubernetes.yaml
+  ```
+* Once Kubernetes Events Log task configuration is in desired state, create corresponding configmaps:
 
   ```shell
   kubectl create configmap task-autoload --from-file=./examples/event-collector-configs/task-logs-k8s-events.yaml --namespace=kube-system
-
-  kubectl describe configmaps -n kube-system task-autoload
+  kubectl create configmap task-manifests --from-file=./examples/event-collector-configs/task-aokubernetes.yaml --namespace=kube-system
+  kubectl create configmap plugin-configs --from-file=./examples/event-collector-configs/kubernetes.yaml --namespace=kube-system
+  
+  kubectl describe configmaps -n kube-system task-autoload plugin-configs task-manifests
   ```
 
 * Create Events Collector Deployment (it will automatically create corresponding ServiceAccount):
@@ -345,7 +386,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl apply -k ./deploy/overlays/stable/events-collector/
   ```
 
-* Watch your cluster events in Loggly
+* Watch your cluster events in Loggly and in your AppOptics account metrics releated to events count in Kubernetes cluster.
 
 
 ## Dashboard
