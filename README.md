@@ -147,7 +147,7 @@ This option is not enabled by default, it have to be turn on to start working.
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 
-* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
+* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly Publisher plugin.
 
   ``` bash
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
@@ -286,7 +286,7 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 
 ## Integrating Kubernetes Cluster Events Collection With Loggly
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
-Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly usingi embedded logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
+Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
 
@@ -294,7 +294,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 
-* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step, in that case `SOLARWINDS_TOKEN`, created in 1st step will be used by Loggly Publisher plugin.
+* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly Publisher plugin.
 
   ``` bash
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
