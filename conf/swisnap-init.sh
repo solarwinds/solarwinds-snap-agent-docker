@@ -8,6 +8,7 @@ TASK_AUTOLOAD_DIR="${SWISNAP_HOME}/etc/tasks-autoload.d"
 CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
 PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
+PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
 swisnap_config_setup() {
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
@@ -23,6 +24,25 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token -- "${SWI_TOKEN}"
     yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
     yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
+
+    if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
+        LOGGLY_PUBL_TOKEN="${LOGGLY_TOKEN}"
+    else
+        LOGGLY_PUBL_TOKEN="${SWI_TOKEN}"
+    fi
+
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http.all.token -- "${LOGGLY_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http-bulk.all.token -- "${LOGGLY_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-syslog.all.token -- "${LOGGLY_PUBL_TOKEN}"
+
+    if [ -n "${PAPERTRAIL_TOKEN}" ] && [ "${PAPERTRAIL_TOKEN}" != 'PAPERTRAIL_TOKEN' ]; then
+        PAPERTRAIL_PUBL_TOKEN="${PAPERTRAIL_TOKEN}"
+    else
+        PAPERTRAIL_PUBL_TOKEN="${SWI_TOKEN}"
+    fi
+
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http-bulk.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
 
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
     yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
@@ -55,6 +75,12 @@ run_plugins_with_default_configs() {
             sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
         fi
     fi
+
+    if [ "$SWISNAP_ENABLE_DOCKER_LOGS" = "true" ]; then
+        DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
+        mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
+    fi
+
 
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
         mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"

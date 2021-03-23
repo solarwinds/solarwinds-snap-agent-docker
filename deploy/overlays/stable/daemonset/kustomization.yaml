@@ -6,6 +6,12 @@ bases:
   - ../../../base/daemonset
 
 
+configMapGenerator:
+  - name: swisnap-host-configmap
+    behavior: merge
+    literals:
+      - SWISNAP_ENABLE_DOCKER_LOGS=false
+
 images:
   - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.2.0-4.0.0.863
+    newTag: 4.3.0-4.1.0.1024
