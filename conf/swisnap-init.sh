@@ -200,7 +200,6 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_DISABLE_HOSTAGENT}" = "true" ]; then
-        rm "${TASK_AUTOLOAD_DIR}/task-aosystem-warmup.yaml"
         rm "${TASK_AUTOLOAD_DIR}/task-aosystem.yaml"
     fi
 

@@ -5,6 +5,7 @@ kind: Kustomization
 bases:
   - ../../../base/daemonset
 
+namespace: kube-system
 
 configMapGenerator:
   - name: swisnap-host-configmap

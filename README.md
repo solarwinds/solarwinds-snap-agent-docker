@@ -142,32 +142,37 @@ This option is not enabled by default, it have to be turn on to start working.
 
 
 * Create `solarwinds-token` secret in your cluster. To create it run:
-``` bash
-kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
-```
+
+  ``` bash
+  kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
+  ```
+
 * (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
-``` bash
-kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
-```
+
+  ``` bash
+  kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+  ```
+
 * Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
-```diff
---- a/deploy/overlays/stable/daemonset/kustomization.yaml
-+++ b/deploy/overlays/stable/daemonset/kustomization.yaml
-@@ -10,7 +10,7 @@ configMapGenerator:
-   - name: swisnap-host-configmap
-     behavior: merge
-     literals:
--      - SWISNAP_ENABLE_DOCKER_LOGS=false
-+      - SWISNAP_ENABLE_DOCKER_LOGS=true
- 
- images:
-   - name: solarwinds/solarwinds-snap-agent-docker
-```
+  ```diff
+  --- a/deploy/overlays/stable/daemonset/kustomization.yaml
+  +++ b/deploy/overlays/stable/daemonset/kustomization.yaml
+  @@ -10,7 +10,7 @@ configMapGenerator:
+     - name: swisnap-host-configmap
+       behavior: merge
+       literals:
+  -      - SWISNAP_ENABLE_DOCKER_LOGS=false
+  +      - SWISNAP_ENABLE_DOCKER_LOGS=true
+   
+   images:
+     - name: solarwinds/solarwinds-snap-agent-docker
+  ```
 
 * Create DaemonSet in your cluster.
-``` bash
-kubectl apply -k ./deploy/overlays/stable/daemonset
-```
+
+  ``` bash
+  kubectl apply -k ./deploy/overlays/stable/daemonset
+  ```
 
 * After a while you should start seeing Docker logs lines in your Loggly organization.
 
@@ -175,70 +180,70 @@ kubectl apply -k ./deploy/overlays/stable/daemonset
 
 SolarWinds Snap Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
 
-``` bash
-# create plugin configMap
-kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
-
-# create task configMap
-kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
-
-# check if everything is fine
-kubectl describe configmaps --namespace=kube-system kubernetes-task-manifest kubernetes-plugin-config
-```
+  ``` bash
+  # create plugin configMap
+  kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
+  
+  # create task configMap
+  kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
+  
+  # check if everything is fine
+  kubectl describe configmaps --namespace=kube-system kubernetes-task-manifest kubernetes-plugin-config
+  ```
 
 ConfigMaps should be attached to SolarWinds Snap Agent deployment. Here's the example, notice `spec.template.spec.containers.volumeMounts` and `spec.template.spec.volumes`:
 
-``` diff
-diff --git a/deploy/base/deployment/kustomization.yaml b/deploy/base/deployment/kustomization.yaml
-index 79e0110..000a108 100644
---- a/deploy/base/deployment/kustomization.yaml
-+++ b/deploy/base/deployment/kustomization.yaml
-@@ -15,7 +15,7 @@ configMapGenerator:
-       - SWISNAP_ENABLE_APACHE=false
-       - SWISNAP_ENABLE_DOCKER=false
-       - SWISNAP_ENABLE_ELASTICSEARCH=false
--      - SWISNAP_ENABLE_KUBERNETES=true
-+      - SWISNAP_ENABLE_KUBERNETES=false
-       - SWISNAP_ENABLE_PROMETHEUS=false
-       - SWISNAP_ENABLE_MESOS=false
-       - SWISNAP_ENABLE_MONGODB=false
-diff --git a/deploy/base/deployment/swisnap-agent-deployment.yaml b/deploy/base/deployment/swisnap-agent-deployment.yaml
-index 294c4b4..babff7d 100644
---- a/deploy/base/deployment/swisnap-agent-deployment.yaml
-+++ b/deploy/base/deployment/swisnap-agent-deployment.yaml
-@@ -45,6 +45,12 @@ spec:
-             - configMapRef:
-                 name: swisnap-k8s-configmap
-           volumeMounts:
-+            - name: kubernetes-plugin-vol
-+              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/kubernetes.yaml
-+              subPath: kubernetes.yaml
-+            - name: kubernetes-task-vol
-+              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-aokubernetes.yaml
-+              subPath: task-aokubernetes.yaml
-             - name: proc
-               mountPath: /host/proc
-               readOnly: true
-@@ -56,6 +62,18 @@ spec:
-               cpu: 100m
-               memory: 256Mi
-       volumes:
-+        - name: kubernetes-plugin-vol
-+          configMap:
-+            name: kubernetes-plugin-config
-+            items:
-+              - key: kubernetes.yaml
-+                path: kubernetes.yaml
-+        - name: kubernetes-task-vol
-+          configMap:
-+            name: kubernetes-task-manifest
-+            items:
-+              - key: task-aokubernetes.yaml
-+                path: task-aokubernetes.yaml
-         - name: proc
-           hostPath:
-             path: /proc
-```
+  ``` diff
+  diff --git a/deploy/base/deployment/kustomization.yaml b/deploy/base/deployment/kustomization.yaml
+  index 79e0110..000a108 100644
+  --- a/deploy/base/deployment/kustomization.yaml
+  +++ b/deploy/base/deployment/kustomization.yaml
+  @@ -15,7 +15,7 @@ configMapGenerator:
+         - SWISNAP_ENABLE_APACHE=false
+         - SWISNAP_ENABLE_DOCKER=false
+         - SWISNAP_ENABLE_ELASTICSEARCH=false
+  -      - SWISNAP_ENABLE_KUBERNETES=true
+  +      - SWISNAP_ENABLE_KUBERNETES=false
+         - SWISNAP_ENABLE_PROMETHEUS=false
+         - SWISNAP_ENABLE_MESOS=false
+         - SWISNAP_ENABLE_MONGODB=false
+  diff --git a/deploy/base/deployment/swisnap-agent-deployment.yaml b/deploy/base/deployment/swisnap-agent-deployment.yaml
+  index 294c4b4..babff7d 100644
+  --- a/deploy/base/deployment/swisnap-agent-deployment.yaml
+  +++ b/deploy/base/deployment/swisnap-agent-deployment.yaml
+  @@ -45,6 +45,12 @@ spec:
+               - configMapRef:
+                   name: swisnap-k8s-configmap
+             volumeMounts:
+  +            - name: kubernetes-plugin-vol
+  +              mountPath: /opt/SolarWinds/Snap/etc/plugins.d/kubernetes.yaml
+  +              subPath: kubernetes.yaml
+  +            - name: kubernetes-task-vol
+  +              mountPath: /opt/SolarWinds/Snap/etc/tasks.d/task-aokubernetes.yaml
+  +              subPath: task-aokubernetes.yaml
+               - name: proc
+                 mountPath: /host/proc
+                 readOnly: true
+  @@ -56,6 +62,18 @@ spec:
+                 cpu: 100m
+                 memory: 256Mi
+         volumes:
+  +        - name: kubernetes-plugin-vol
+  +          configMap:
+  +            name: kubernetes-plugin-config
+  +            items:
+  +              - key: kubernetes.yaml
+  +                path: kubernetes.yaml
+  +        - name: kubernetes-task-vol
+  +          configMap:
+  +            name: kubernetes-task-manifest
+  +            items:
+  +              - key: task-aokubernetes.yaml
+  +                path: task-aokubernetes.yaml
+           - name: proc
+             hostPath:
+               path: /proc
+  ```
 Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Kubernetes plugin. When you're attaching taskfiles and plugin configuration files through configMaps, there's no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load plugins based on files stored in configMaps.
 
 ### Environment Parameters
@@ -284,14 +289,17 @@ This documentaton can be also found in [Documentation for SolarWinds](https://do
 Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly usingi embedded logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
+
   ```shell
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 
 * (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step, in that case `SOLARWINDS_TOKEN`, created in 1st step will be used by Loggly Publisher plugin.
-``` bash
-kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
-```
+
+  ``` bash
+  kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+  ```
+
 * [task-logs-k8s-events.yaml](examples/event-collector-configs/task-logs-k8s-events.yaml) file configures the Kubernetes Events Log task. This config contains `plugins.config.filters` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace. Depending on your needs, you can modify this filter to monitor other event types, or other namespaces.
 
   ```yaml
@@ -322,16 +330,21 @@ kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_
       publish:
         - plugin_name: loggly-http-bulk
   ```
+
 * Once above steps are finished, create corresponding configmap:
+
   ```shell
   kubectl create configmap task-autoload --from-file=./examples/event-collector-configs/task-logs-k8s-events.yaml --namespace=kube-system
 
   kubectl describe configmaps -n kube-system task-autoload
   ```
+
 * Create Events Collector Deployment (it will automatically create corresponding ServiceAccount):
+
   ```shell
   kubectl apply -k ./deploy/overlays/stable/events-collector/
   ```
+
 * Watch your cluster events in Loggly
 
 
