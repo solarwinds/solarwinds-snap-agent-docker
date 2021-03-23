@@ -145,18 +145,31 @@ Create `solarwinds-token` secret in your cluster. To create it  run:
 ``` bash
 kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
-
-
-(Optional step) If your token for Loggly is diferent than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
+(Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If this is not done, or the tokens are not different SOLARWINDS_TOKEN will be used.
 ``` bash
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 ```
+Set `SWISNAP_ENABLE_DOCKER_LOGS` to true in DeamonSet [kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
+```diff
+--- a/deploy/overlays/stable/daemonset/kustomization.yaml
++++ b/deploy/overlays/stable/daemonset/kustomization.yaml
+@@ -10,7 +10,7 @@ configMapGenerator:
+   - name: swisnap-host-configmap
+        behavior: merge
+             literals:
+             -      - SWISNAP_ENABLE_DOCKER_LOGS=false
+             +      - SWISNAP_ENABLE_DOCKER_LOGS=true
+              
+               images:
+                  - name: solarwinds/solarwinds-snap-agent-docker
+```
 
-Set deploy/overlays/stable/daemonset/
-deploy/overlays/stable/daemonset/
+Create DaemonSet in your cluster.
+``` bash
+kubectl apply -k ./deploy/overlays/stable/daemonset
+```
 
-
-
+After a while you should start seeing Docker logs lines trickle in your Loggly organization.
 
 ### Custom plugins configuration and tasks manifests
 
