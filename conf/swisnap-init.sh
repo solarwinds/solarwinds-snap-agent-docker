@@ -82,7 +82,7 @@ run_plugins_with_default_configs() {
         fi
     fi
 
-    if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ] && [ -n "${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}"]; then
+    if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ] && [ -n "${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}" ]; then
         DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
         mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
         yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
@@ -91,9 +91,9 @@ run_plugins_with_default_configs() {
         done
 
         yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.showstdout' true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.showstderr" true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.follow" true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.tail" all
+        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.showstderr' true
+        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.follow' true
+        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.tail' all
     fi
 
 
