@@ -167,7 +167,7 @@ This option is disabled by default, it has to be turned on to start working.
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
   ```
 
-* Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
+* Set `SWISNAP_ENABLE_DOCKER_LOGS` to `true` and `SWISNAP_DOCKER_LOGS_CONTAINER_NAMES` to desired container names in stable overlay for [DaemonSet kustomization.yaml](deploy/overlays/stable/daemonset/kustomization.yaml).
   ```diff
   --- a/deploy/overlays/stable/daemonset/kustomization.yaml
   +++ b/deploy/overlays/stable/daemonset/kustomization.yaml
@@ -177,6 +177,7 @@ This option is disabled by default, it has to be turned on to start working.
        literals:
   -      - SWISNAP_ENABLE_DOCKER_LOGS=false
   +      - SWISNAP_ENABLE_DOCKER_LOGS=true
+  +      - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES="nginx apache"
    
    images:
      - name: solarwinds/solarwinds-snap-agent-docker
@@ -190,8 +191,7 @@ This option is disabled by default, it has to be turned on to start working.
 
 * After a while you should start seeing Docker logs lines in your Loggly organization.
 
-If you would like to use different Loggly endpoint, or use Papertrail enpoints, there will be a need to # FIXME
-
+If you would like to use different Loggly endpoint, or use Papertrail enpoints, there will be a need to setup up custom task configuration, as described in [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests)
 
 ### Custom plugins configuration and tasks manifests
 
@@ -324,7 +324,8 @@ The following environment parameters are available:
  SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the SolarWinds Snap Agent system metrics collection.
  SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the SolarWinds Snap Agent processes metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin. This requires Docker socket mounted inside container (done by default in DaemonSet).
- SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. This requires Docker socket mounted inside container (done by default in DaemonSet).
+ SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. If set to true, setting `SWISNAP_DOCKER_LOGS_CONTAINER_NAMES` var is mandratory. This also requires Docker socket mounted inside container (done by default in DaemonSet).
+ SWISNAP_DOCKER_LOGS_CONTAINER_NAMES | Space separated list of container names, for which log colelctor/forwarder should be set.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.

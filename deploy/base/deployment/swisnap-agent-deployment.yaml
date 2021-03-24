@@ -48,6 +48,12 @@ spec:
                   name: solarwinds-token
                   key: SOLARWINDS_TOKEN
                   optional: true
+            - name: LOGGLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: loggly-token 
+                  key: LOGGLY_TOKEN
+                  optional: true
             - name: PAPERTRAIL_TOKEN
               valueFrom:
                 secretKeyRef:
