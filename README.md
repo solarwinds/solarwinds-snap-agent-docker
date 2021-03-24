@@ -137,7 +137,7 @@ In the example above, the sidecar will run only the Apache plugin. Additionally,
 
 ### Enabling Docker Logs collector from Kubernetes nodes
 
-In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs from underlaying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics).
+In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs from underlying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics).
 This option is disabled by default, it has to be turned on to start working. 
 
 
