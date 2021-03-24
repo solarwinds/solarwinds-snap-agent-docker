@@ -1,6 +1,6 @@
 FROM ubuntu:bionic
 
-LABEL authors='SolarWinds AppOptics team <support@appoptics.com>'
+LABEL authors='SolarWinds AppOptics team <technicalsupport@solarwinds.com>'
 
 USER root
 ARG DEBIAN_FRONTEND=noninteractive

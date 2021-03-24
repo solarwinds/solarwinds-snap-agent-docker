@@ -25,6 +25,17 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
     yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
 
+    if [ -n "${LOG_LEVEL}" ]; then
+        yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
+    fi
+
+    if [ "${SWISNAP_SECURE}" = true ]; then
+        FLAGS=("--keyring-paths" "${SWISNAP_HOME}/.gnupg/")
+    else
+        yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
+    fi
+    
+    # Logs Publisher releated configs
     if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
         LOGGLY_PUBL_TOKEN="${LOGGLY_TOKEN}"
     else
@@ -44,18 +55,13 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http-bulk.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
     yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
 
+    if [ -n "${PAPERTAIL_HOST}" ] && [ -n "${PAPERTAIL_PORT}" ]; then
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.host "${PAPERTAIL_HOST}"
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.port "${PAPERTAIL_PORT}"
+    fi
+
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
     yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
-
-    if [ -n "${LOG_LEVEL}" ]; then
-        yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
-    fi
-
-    if [ "${SWISNAP_SECURE}" = true ]; then
-        FLAGS=("--keyring-paths" "${SWISNAP_HOME}/.gnupg/")
-    else
-        yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
-    fi
 
     # Use APPOPTICS_HOSTNAME as hostname_alias
     if [ -n "${APPOPTICS_HOSTNAME}" ]; then
@@ -69,14 +75,14 @@ run_plugins_with_default_configs() {
         mv "${PLUGINS_DIR}/apache.yaml.example" "${PLUGINS_DIR}/apache.yaml"
     fi
 
-    if [ "$SWISNAP_ENABLE_DOCKER" = "true" ]; then
+    if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
         mv "${PLUGINS_DIR}/docker.yaml.example" "${PLUGINS_DIR}/docker.yaml"
         if [[ -n "${HOST_PROC}" ]]; then
             sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
         fi
     fi
 
-    if [ "$SWISNAP_ENABLE_DOCKER_LOGS" = "true" ]; then
+    if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ]; then
         DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
         mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
     fi
@@ -88,6 +94,12 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
         mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+    fi
+
+    if [ "${SWISNAP_ENABLE_KUBERNETES_LOGS}" = "true" ]; then
+        KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml.yaml"
+        mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
+        yq w 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then

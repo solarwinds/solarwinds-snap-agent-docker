@@ -44,6 +44,24 @@ spec:
                   name: loggly-token
                   key: LOGGLY_TOKEN
                   optional: true
+            - name: PAPERTRAIL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-publisher-settings
+                  key: PAPERTRAIL_TOKEN
+                  optional: true
+            - name: PAPERTRAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-publisher-settings
+                  key: PAPERTRAIL_HOST
+                  optional: true
+            - name: PAPERTRAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-publisher-settings
+                  key: PAPERTRAIL_PORT
+                  optional: true
           envFrom:
             - configMapRef:
                 name: swisnap-agent-k8s-events-configmap

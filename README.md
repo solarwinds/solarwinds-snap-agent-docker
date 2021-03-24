@@ -36,6 +36,20 @@ Kubernetes assests available in this repository expect a `solarwinds-token` secr
 kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
 ```
 
+* (Optional) If you wish to use Logs Collector/Forwarder functionality from SolarWinds Snap Agent and your token for Loggly or Papertrail is different than your SolarWinds token, please create new Kubernetes secrets, depending on a needs. 
+If these tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly and Papertrail Publisher plugins.
+``` bash
+# setting for loggly-http, loggly-http-bulk, loggly-syslog Logs Publishers
+kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+
+# setting for swi-logs-http-bulk, swi-logs-http Logs Publishers 
+kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
+
+# setting for papertrail-syslog publisher
+kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_HOST=<REPLACE WITH PAPERTRAIL HOST>
+kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_PORT=<REPLACE WITH PAPERTRAIL PORT>
+```
+
 ### Deployment
 
 By default, RBAC is enabled in the deploy manifests. If you are not using RBAC you can deploy [swisnap-agent-deployment.yaml](deploy/base/deployment/swisnap-agent-deployment.yaml) removing the reference to the Service Account.
@@ -137,7 +151,7 @@ In the example above, the sidecar will run only the Apache plugin. Additionally,
 
 ### Enabling Docker Logs collector from Kubernetes nodes
 
-In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs from underlying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics).
+In this configuration SolarWinds Snap Agent DaemonSet will gather Docker logs from underlying node and publish them to Loggly (in addition to gathering HostAgent and Docker metrics to AppOptics). In current setting it will gather all logs from container named "nginx"
 This option is disabled by default, it has to be turned on to start working. 
 
 
@@ -176,15 +190,18 @@ This option is disabled by default, it has to be turned on to start working.
 
 * After a while you should start seeing Docker logs lines in your Loggly organization.
 
+If you would like to use different Loggly endpoint, or use Papertrail enpoints, there will be a need to # FIXME
+
+
 ### Custom plugins configuration and tasks manifests
 
-SolarWinds Snap Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
+SolarWinds Snap Agent image is using default plugins configuration files and tasks manifests. In order to use your own configuration you would have to create [Kubernetes configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap). Depending on version of the plugin there will be a need to create either task manifest and plugin config (Plugins v1), or task configuration in case of Plugins v2. 
 
+#### Plugins v1
+In this example we'll set up two configMaps, one for SolarWinds Snap Agent Kubernetes plugin config and second one for corresponding task.
   ``` bash
-  # create plugin configMap
+  # create plugin configMap and task manifest for Plugin v1
   kubectl create configmap kubernetes-plugin-config --from-file=/path/to/my/plugins.d/kubernetes.yaml --namespace=kube-system
-
-  # create task configMap
   kubectl create configmap kubernetes-task-manifest --from-file=/path/to/my/tasks.d/task-aokubernetes.yaml --namespace=kube-system
 
   # check if everything is fine
@@ -246,6 +263,47 @@ ConfigMaps should be attached to SolarWinds Snap Agent deployment. Here's the ex
   ```
 Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Kubernetes plugin. When you're attaching taskfiles and plugin configuration files through configMaps, there's no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load plugins based on files stored in configMaps.
 
+
+#### Plugins v2
+
+In this example we'll set up one configMaps, for SolarWinds Snap Agent Kubernetes Logs Collector/Forwarder task configuration.
+  ``` bash
+  # create task configuration configMap  for Plugin v2
+  kubectl create configmap logs-task-config --from-file=/path/to/my/task-autoload.d/task-logs-k8s-events.yaml --namespace=kube-system
+  ```
+
+ConfigMaps should be attached to SolarWinds Snap Agent deployment. Here's the example, notice `spec.template.spec.containers.volumeMounts` and `spec.template.spec.volumes`:
+  ```diff
+  diff --git a/deploy/base/deployment/swisnap-agent-deployment.yaml b/deploy/base/deployment/swisnap-agent-deployment.yaml
+  index 294c4b4..babff7d 100644
+  --- a/deploy/base/deployment/swisnap-agent-deployment.yaml
+  +++ b/deploy/base/deployment/swisnap-agent-deployment.yaml
+  @@ -45,6 +45,12 @@ spec:
+               - configMapRef:
+                   name: swisnap-k8s-configmap
+             volumeMounts:
+  +            - name: logs-task-vol
+  +              mountPath: /opt/SolarWinds/Snap/etc/tasks-autoload.d/task-logs-k8s-events.yaml
+  +              subPath: task-logs-k8s-events.yaml
+               - name: proc
+                 mountPath: /host/proc
+                 readOnly: true
+  @@ -56,6 +62,18 @@ spec:
+                 cpu: 100m
+                 memory: 256Mi
+         volumes:
+  +        - name: logs-task-vol
+  +          configMap:
+  +            name: logs-task-config 
+  +            items:
+  +              - key: task-logs-k8s-events.yaml
+  +                path: task-logs-k8s-events.yaml
+           - name: proc
+             hostPath:
+               path: /proc
+  ```
+Notice that we're not utilizing [Environment Parameters](#environment-parameters) to turn on Logs plugin. When you're attaching task configuration files through configMaps, there's no need to set environment variables `SWISNAP_ENABLE_<plugin-name>`. SolarWinds Snap Agent will automatically load tasks based on files stored in configMaps and mounted to `/opt/SolarWinds/Snap/etc/tasks-autoload.d/` in container.
+
 ### Environment Parameters
 
 The following environment parameters are available:
@@ -255,8 +313,10 @@ The following environment parameters are available:
  APPOPTICS_CUSTOM_TAGS          | Set this to a comma separated K=V list to enable custom tags eg. `NAME=TEST,IS_PRODUCTION=false,VERSION=5`
  SOLARWINDS_TOKEN               | Your SolarWinds token. This parameter is required.
  APPOPTICS_TOKEN                | Depreciated. Your SolarWinds token. This parameter is used as fallback if SOLARWINDS_TOKEN is not present.
- LOGGLY_TOKEN                   | Optional. Use this when your Loggly token differs from Your SolarWinds token. If set, this will be used for tasks using Loggly Publishers.
- PAPERTRAIL_TOKEN               | Optional. Use this when your Papertrail token differs from Your SolarWinds token. If set, this will be used for tasks using Papertrail Publishers.
+ LOGGLY_TOKEN                   | Optional. Use this when your Loggly token differs from Your SolarWinds token. If set, this will be used for tasks using Loggly Publishers (loggly-syslog, loggly-http-bulk, loggly-http).
+ PAPERTRAIL_TOKEN               | Optional. Use this when your Papertrail token differs from Your SolarWinds token. If set, this will be used for tasks using Papertrail Publishers (swi-logs-http, swi-logs-http-bulk).
+ PAPERTAIL_HOST                 | Optional. Use this when you intend to use `papertrail-syslog` publisher. Change this to your Papertrail host.
+ PAPERTRAIL_PORT                | Optional. Use this when you intend to use `papertrail-syslog` publisher. Change this to your Papertrail port.
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
