@@ -5,8 +5,10 @@ kind: Kustomization
 bases:
   - ../../../base/deployment
 
+namespace: kube-system
+
 configMapGenerator:
-  - name: swisnap-host-configmap
+  - name: swisnap-k8s-configmap
     behavior: merge
     literals:
       - SWISNAP_ENABLE_KUBERNETES_LOGS=false

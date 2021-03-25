@@ -111,9 +111,12 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES_LOGS}" = "true" ]; then
-        KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml.yaml"
+        KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
         mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
         yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].watch_only' 'true'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].options.fieldSelector' 'type==Normal'
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then

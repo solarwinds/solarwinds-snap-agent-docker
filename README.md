@@ -176,6 +176,7 @@ This option is disabled by default, it has to be turned on to start working.
        literals:
   -      - SWISNAP_ENABLE_DOCKER_LOGS=false
   +      - SWISNAP_ENABLE_DOCKER_LOGS=true
+  -      - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES=""
   +      - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES="nginx apache"
    
    images:
@@ -363,7 +364,23 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
   ```
 
-* Edit kustomisation.yaml for Snap Agent Deployment
+* Edit kustomisation.yaml for Snap Agent Deployment and set `SWISNAP_ENABLE_KUBERNETES_LOGS` parameter to `true`
+
+  ```diff
+  index 8b5d94b..f3aac10 100644
+  --- a/deploy/overlays/stable/deployment/kustomization.yaml
+  +++ b/deploy/overlays/stable/deployment/kustomization.yaml
+  @@ -9,7 +9,7 @@ configMapGenerator:
+     - name: swisnap-k8s-configma 
+       behavior: merge
+       literals:
+  -      - SWISNAP_ENABLE_KUBERNETES_LOGS=false
+  +      - SWISNAP_ENABLE_KUBERNETES_LOGS=true
+
+   images:
+     - name: solarwinds/solarwinds-snap-agent-docker
+  ```
+
 FIXME
 
 * Create Snap Agent Deployment (it will automatically create corresponding ServiceAccount):
