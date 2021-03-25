@@ -25,6 +25,13 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
     yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
 
+    # Use APPOPTICS_HOSTNAME as hostname_alias
+    if [ -n "${APPOPTICS_HOSTNAME}" ]; then
+        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.hostname_alias "${APPOPTICS_HOSTNAME}"
+        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
+        yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
+    fi
+
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
     fi
@@ -34,8 +41,11 @@ swisnap_config_setup() {
     else
         yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
     fi
-    
-    # Logs Publisher releated configs
+
+    yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
+    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
+
+    # Logs Publishers releated configs
     if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
         LOGGLY_PUBL_TOKEN="${LOGGLY_TOKEN}"
     else
@@ -55,18 +65,12 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http-bulk.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
     yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
 
-    if [ -n "${PAPERTAIL_HOST}" ] && [ -n "${PAPERTAIL_PORT}" ]; then
-       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.host "${PAPERTAIL_HOST}"
-       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.port "${PAPERTAIL_PORT}"
+    if [ -n "${PAPERTRAIL_HOST}" ] && [ -n "${PAPERTRAIL_PORT}" ]; then
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.host "${PAPERTRAIL_HOST}"
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.port "${PAPERTRAIL_PORT}"
     fi
 
-    yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
-    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
 
-    # Use APPOPTICS_HOSTNAME as hostname_alias
-    if [ -n "${APPOPTICS_HOSTNAME}" ]; then
-        yq w -i "${CONFIG_FILE}" control.plugins.publisher.publisher-appoptics.all.hostname_alias "${APPOPTICS_HOSTNAME}"
-    fi
 }
 
 run_plugins_with_default_configs() {
@@ -90,10 +94,11 @@ run_plugins_with_default_configs() {
             yq w -i "${DOCKER_LOGS_CONFIG}" "plugins.(plugin_name==docker-logs).config.logs[+].filters.name.${cont_name}" true
         done
 
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.showstdout' true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.showstderr' true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.follow' true
-        yq w -i 'plugins.(plugin_name==docker-logs).config.logs[*].filters.options.tail' all
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstdout' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstderr' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.follow' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.tail' all
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.since' --tag '!!str' ""
     fi
 
 

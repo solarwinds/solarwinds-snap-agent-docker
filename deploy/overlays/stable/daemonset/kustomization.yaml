@@ -12,6 +12,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - SWISNAP_ENABLE_DOCKER_LOGS=false
+      - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES=""
 
 images:
   - name: solarwinds/solarwinds-snap-agent-docker

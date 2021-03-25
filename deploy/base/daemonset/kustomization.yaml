@@ -24,7 +24,7 @@ configMapGenerator:
       - SWISNAP_ENABLE_ZOOKEEPER=false
       - SWISNAP_DISABLE_HOSTAGENT=false
       - SWISNAP_DISABLE_PROCESSES=false
-      - SWISNAP_SECURE=false
+      - SWISNAP_SECURE=true
       - HOST_PROC=/host/proc
       - LOG_LEVEL=WARN
 

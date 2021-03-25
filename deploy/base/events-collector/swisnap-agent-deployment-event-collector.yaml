@@ -47,7 +47,7 @@ spec:
             - name: PAPERTRAIL_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: papertrail-publisher-settings
+                  name: papertrail-token
                   key: PAPERTRAIL_TOKEN
                   optional: true
             - name: PAPERTRAIL_HOST

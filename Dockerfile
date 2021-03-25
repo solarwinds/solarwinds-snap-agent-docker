@@ -37,6 +37,5 @@ COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 WORKDIR /opt/SolarWinds/Snap
 
 EXPOSE 21413
-
 # Run SolarWinds Snap Agent
 CMD ["/opt/SolarWinds/Snap/etc/init.sh"]

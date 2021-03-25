@@ -5,6 +5,12 @@ kind: Kustomization
 bases:
   - ../../../base/deployment
 
+configMapGenerator:
+  - name: swisnap-host-configmap
+    behavior: merge
+    literals:
+      - SWISNAP_ENABLE_KUBERNETES_LOGS=false
+
 images:
   - name: solarwinds/solarwinds-snap-agent-docker
     newTag: 4.3.0-4.1.0.1024

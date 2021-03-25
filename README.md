@@ -43,11 +43,10 @@ If these tokens are the same, there is no need to perform this step - in that ca
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 
 # setting for swi-logs-http-bulk, swi-logs-http Logs Publishers 
-kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
+kubectl create secret generic papertrail-token -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
 
 # setting for papertrail-syslog publisher
-kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_HOST=<REPLACE WITH PAPERTRAIL HOST>
-kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_PORT=<REPLACE WITH PAPERTRAIL PORT>
+kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_HOST=<REPLACE WITH PAPERTRAIL HOST> --from-literal=PAPERTRAIL_PORT=<REPLACE WITH PAPERTRAIL PORT>
 ```
 
 ### Deployment
@@ -320,15 +319,16 @@ The following environment parameters are available:
  APPOPTICS_HOSTNAME             | This value overrides the hostname tagged for default host metrics. The DaemonSet uses this to override with Node name.
  LOG_LEVEL                      | Expected value: DEBUG, INFO, WARN, ERROR or FATAL. Default value is WARN.
  LOG_PATH                       | Set this value to enable SolarWinds Snap Agent logging to file. Default logs are printed to stdout for SolarWinds Snap Agent running in Docker container. Overriding this option disable reading Snap Agent log using `docker logs`, or `kubectl logs`.
- SWISNAP_SECURE                 | Set this to `true` to run only signed plugins.
+ SWISNAP_SECURE                 | Set this to `true` to run only signed plugins. Turned on by default for Kubernetes assets.
  SWISNAP_DISABLE_HOSTAGENT      | Set this to `true` to disable the SolarWinds Snap Agent system metrics collection.
  SWISNAP_DISABLE_PROCESSES      | Set this to `true` to disable the SolarWinds Snap Agent processes metrics collection.
  SWISNAP_ENABLE_DOCKER          | Set this to `true` to enable the Docker plugin. This requires Docker socket mounted inside container (done by default in DaemonSet).
- SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. If set to true, setting `SWISNAP_DOCKER_LOGS_CONTAINER_NAMES` var is mandratory. This also requires Docker socket mounted inside container (done by default in DaemonSet).
+ SWISNAP_ENABLE_DOCKER_LOGS     | Set this to true to enable Logs collector task for gathering Docker logs. If set to true, setting `SWISNAP_DOCKER_LOGS_CONTAINER_NAMES` var is mandatory. This also requires Docker socket mounted inside container (done by default in DaemonSet).
  SWISNAP_DOCKER_LOGS_CONTAINER_NAMES | Space separated list of container names, for which log colelctor/forwarder should be set.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
+ SWISNAP_ENABLE_KUBERNETES_LOGS | Set this to `true` to enable the default Kubernetes logs collector/forwarder. To enable this proper RBAC role have to be set (done for Deployment form this repo).
  SWISNAP_ENABLE_NGINX           | Set this to `true` to enable the Nginx plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx stub_status URI.
  SWISNAP_ENABLE_NGINX_PLUS      | Set this to `true` to enable the Nginx Plus plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to ngx_http_status_module or status URI.
  SWISNAP_ENABLE_NGINX_PLUS_API  | Set this to `true` to enable the Nginx Plus Api plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx API URI.
@@ -347,7 +347,36 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 
 ## Integrating Kubernetes Cluster Events Collection With Loggly
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
-Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
+
+Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. There are two different ways to enable this functionality - one with enabling default forwarder for Snap Deployment, in which there will be monitored normal events in default namespace [Instructions](#enabling-default-kuberentes-log-forwarder). The second option is more advanced and require create corresponding configmaps in your cluster, with proper task configuration. This way allows you to manually edit this configuration, with option to modify both desired event filters, monitored Kubernetes namespace and to select desired publisher [Instruction](#advanced-configuration-for-Kuberetes-log-forwarder-with-custom-task-configuration).
+
+### Enabling default Kuberetes log forwarder
+
+* Create Kubernetes secret for `SOLARWINDS_TOKEN`:
+
+  ```shell
+  kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
+  ```
+* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly Publisher plugin.
+
+  ``` bash
+  kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+  ```
+
+* Edit kustomisation.yaml for Snap Agent Deployment
+FIXME
+
+* Create Snap Agent Deployment (it will automatically create corresponding ServiceAccount):
+
+  ```shell
+  kubectl apply -k ./deploy/overlays/stable/events-collector/
+  ```
+
+* Watch your cluster events in Loggly.
+
+### Advanced configuration for Kuberetes log forwarder with custom task configuration
+
+To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
 
@@ -355,10 +384,18 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl create secret generic solarwinds-token -n kube-system --from-literal=SOLARWINDS_TOKEN=<REPLACE WITH TOKEN>
   ```
 
-* (Optional step) If your token for Loggly is different than your SolarWinds token, please create new Kubernetes secret. If the tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly Publisher plugin.
+* (Optional) If you wish to use Logs Collector/Forwarder functionality from SolarWinds Snap Agent and your token for Loggly or Papertrail is different than your SolarWinds token, please create new Kubernetes secrets, depending on a needs. 
+Note: If these tokens are the same, there is no need to perform this step - in that case `SOLARWINDS_TOKEN`, will be used by Loggly and Papertrail Publisher plugins.
 
   ``` bash
+  # setting for loggly-http, loggly-http-bulk, loggly-syslog Logs Publishers
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
+
+  # setting for swi-logs-http-bulk, swi-logs-http Logs Publishers 
+  kubectl create secret generic papertrail-token -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
+
+  # setting for papertrail-syslog publisher
+  kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_HOST=<REPLACE WITH PAPERTRAIL HOST> --from-literal=PAPERTRAIL_PORT=<REPLACE WITH PAPERTRAIL PORT>
   ```
 
 * [task-logs-k8s-events.yaml](examples/event-collector-configs/task-logs-k8s-events.yaml) file configures the Kubernetes Events Log task. This config contains `plugins.config.filters` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace. Depending on your needs, you can modify this filter to monitor other event types, or other namespaces.
@@ -389,7 +426,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
       #    sometag: somevalue
 
       publish:
-        - plugin_name: loggly-http-bulk
+        - plugin_name: loggly-http-bulk # this could be set to any other Logs Publisher
   ```
 
 * Once Kubernetes Events Log task configuration is in desired state, create corresponding configmaps:
@@ -406,7 +443,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl apply -k ./deploy/overlays/stable/events-collector/
   ```
 
-* Watch your cluster events in Loggly.
+* Watch your cluster events in Loggly, or Papertrail.
 
 
 ## Dashboard
