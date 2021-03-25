@@ -346,12 +346,12 @@ The following environment parameters are available:
 
 If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that SolarWinds Snap Agent will use default plugins configs and task manifests. For custom configuration see [Custom plugins configuration and tasks manifests](#custom-plugins-configuration-and-tasks-manifests).
 
-## Integrating Kubernetes Cluster Events Collection With Loggly
+## Integrating Kubernetes Cluster Events Collection with Loggly/Papertrail
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
 
 Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. There are two different ways to enable this functionality - one with enabling default forwarder for Snap Deployment, in which there will be monitored normal events in default namespace [Instructions](#enabling-default-kuberentes-log-forwarder). The second option is more advanced and require create corresponding configmaps in your cluster, with proper task configuration. This way allows you to manually edit this configuration, with option to modify both desired event filters, monitored Kubernetes namespace and to select desired publisher [Instruction](#advanced-configuration-for-Kuberetes-log-forwarder-with-custom-task-configuration).
 
-### Enabling default Kuberetes log forwarder
+### Enabling default Kubernetes log forwarder
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
 
