@@ -381,8 +381,6 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
      - name: solarwinds/solarwinds-snap-agent-docker
   ```
 
-FIXME
-
 * Create Snap Agent Deployment (it will automatically create corresponding ServiceAccount):
 
   ```shell
