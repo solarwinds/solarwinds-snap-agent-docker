@@ -329,7 +329,7 @@ The following environment parameters are available:
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin.
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
- SWISNAP_ENABLE_KUBERNETES_LOGS | Set this to `true` to enable the default Kubernetes logs collector/forwarder. To enable this proper RBAC role have to be set (done for Deployment form this repo).
+ SWISNAP_ENABLE_KUBERNETES_LOGS | Set this to `true` to enable the default Kubernetes logs collector/forwarder. To enable this proper RBAC role have to be set (done for Deployment from this repo).
  SWISNAP_ENABLE_NGINX           | Set this to `true` to enable the Nginx plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx stub_status URI.
  SWISNAP_ENABLE_NGINX_PLUS      | Set this to `true` to enable the Nginx Plus plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to ngx_http_status_module or status URI.
  SWISNAP_ENABLE_NGINX_PLUS_API  | Set this to `true` to enable the Nginx Plus Api plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_PLUS_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx API URI.
@@ -349,7 +349,7 @@ If you use `SWISNAP_ENABLE_<plugin_name>` set to `true`, then keep in mind that 
 ## Integrating Kubernetes Cluster Events Collection with Loggly/Papertrail
 This documentaton can be also found in [Documentation for SolarWinds](https://documentation.solarwinds.com/en/Success_Center/appoptics/Content/kb/host_infrastructure/host_agent/kubernetes_ha.htm#integrating-kubernetes-cluster-events-collection-with-loggly) webpage.
 
-Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. There are two different ways to enable this functionality - one with enabling default forwarder for Snap Deployment, in which there will be monitored normal events in default namespace [Instructions](#enabling-default-kuberentes-log-forwarder). The second option is more advanced and require create corresponding configmaps in your cluster, with proper task configuration. This way allows you to manually edit this configuration, with option to modify both desired event filters, monitored Kubernetes namespace and to select desired publisher [Instruction](#advanced-configuration-for-Kuberetes-log-forwarder-with-custom-task-configuration).
+Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster events and push them to Loggly using embedded logs collector under the hood. There are two different ways to enable this functionality - one with enabling default forwarder for Snap Deployment, in which there will be monitored `Normal` events in `default` namespace [Instructions](#enabling-default-kuberentes-log-forwarder). The second option is more advanced and require create corresponding configmaps in your cluster, with proper task configuration. This way allows you to manually edit this configuration, with option to modify both desired event filters, monitored Kubernetes namespace and to select desired publisher [Instruction](#advanced-configuration-for-Kuberetes-log-forwarder-with-custom-task-configuration).
 
 ### Enabling default Kubernetes log forwarder
 
@@ -364,7 +364,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
   kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
   ```
 
-* Edit kustomisation.yaml for Snap Agent Deployment and set `SWISNAP_ENABLE_KUBERNETES_LOGS` parameter to `true`
+* Edit [kustomisation.yaml](deploy/overlays/stable/deployment/kustomization.yaml) for Snap Agent Deployment and set `SWISNAP_ENABLE_KUBERNETES_LOGS` parameter to `true`
 
   ```diff
   index 8b5d94b..f3aac10 100644
@@ -391,7 +391,7 @@ Starting from SolarWinds Snap Agent release 4.1.0 allows you to collect cluster 
 
 ### Advanced configuration for Kuberetes log forwarder with custom task configuration
 
-To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collection in your deployment, follow below steps:
+To utilize this functionality there is a need to create corresponding configmaps in your cluster, with proper task configuration. The example config file can be found in [Event collector configs](examples/event-collector-configs). To enable event collector in your deployment, follow below steps:
 
 * Create Kubernetes secret for `SOLARWINDS_TOKEN`:
 
@@ -413,7 +413,7 @@ Note: If these tokens are the same, there is no need to perform this step - in t
   kubectl create secret generic papertrail-publisher-settings -n kube-system --from-literal=PAPERTRAIL_HOST=<REPLACE WITH PAPERTRAIL HOST> --from-literal=PAPERTRAIL_PORT=<REPLACE WITH PAPERTRAIL PORT>
   ```
 
-* [task-logs-k8s-events.yaml](examples/event-collector-configs/task-logs-k8s-events.yaml) file configures the Kubernetes Events Log task. This config contains `plugins.config.filters` field with specified filter. With this example filter event collector will watch for `normal` events in `default` namespace. Depending on your needs, you can modify this filter to monitor other event types, or other namespaces.
+* [task-logs-k8s-events.yaml](examples/event-collector-configs/task-logs-k8s-events.yaml) file configures the Kubernetes Events Log task. This config contains `plugins.config.filters` field with specified filter. With this example filter event collector will watch for `Normal` events in `default` namespace. Depending on your needs, you can modify this filter to monitor other event types, or other namespaces.
 
   ```yaml
   version: 2
