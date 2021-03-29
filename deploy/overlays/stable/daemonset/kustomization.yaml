@@ -5,7 +5,15 @@ kind: Kustomization
 bases:
   - ../../../base/daemonset
 
+namespace: kube-system
+
+configMapGenerator:
+  - name: swisnap-host-configmap
+    behavior: merge
+    literals:
+      - SWISNAP_ENABLE_DOCKER_LOGS=false
+      - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES=""
 
 images:
   - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.2.0-4.0.0.863
+    newTag: 4.3.0-4.1.0.1024

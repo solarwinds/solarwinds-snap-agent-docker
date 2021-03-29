@@ -48,6 +48,30 @@ spec:
                   name: solarwinds-token
                   key: SOLARWINDS_TOKEN
                   optional: true
+            - name: LOGGLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: loggly-token 
+                  key: LOGGLY_TOKEN
+                  optional: true
+            - name: PAPERTRAIL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-token
+                  key: PAPERTRAIL_TOKEN
+                  optional: true
+            - name: PAPERTRAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-publisher-settings
+                  key: PAPERTRAIL_HOST
+                  optional: true
+            - name: PAPERTRAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-publisher-settings
+                  key: PAPERTRAIL_PORT
+                  optional: true
           envFrom:
             - configMapRef:
                 name: swisnap-k8s-configmap

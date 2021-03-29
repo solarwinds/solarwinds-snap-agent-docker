@@ -8,6 +8,7 @@ TASK_AUTOLOAD_DIR="${SWISNAP_HOME}/etc/tasks-autoload.d"
 CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
 PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
+PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
 swisnap_config_setup() {
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
@@ -24,8 +25,12 @@ swisnap_config_setup() {
     yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
     yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
 
-    yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
-    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
+    # Use APPOPTICS_HOSTNAME as hostname_alias
+    if [ -n "${APPOPTICS_HOSTNAME}" ]; then
+        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.hostname_alias "${APPOPTICS_HOSTNAME}"
+        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
+        yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
+    fi
 
     if [ -n "${LOG_LEVEL}" ]; then
         yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
@@ -37,10 +42,35 @@ swisnap_config_setup() {
         yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
     fi
 
-    # Use APPOPTICS_HOSTNAME as hostname_alias
-    if [ -n "${APPOPTICS_HOSTNAME}" ]; then
-        yq w -i "${CONFIG_FILE}" control.plugins.publisher.publisher-appoptics.all.hostname_alias "${APPOPTICS_HOSTNAME}"
+    yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
+    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
+
+    # Logs Publishers releated configs
+    if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
+        LOGGLY_PUBL_TOKEN="${LOGGLY_TOKEN}"
+    else
+        LOGGLY_PUBL_TOKEN="${SWI_TOKEN}"
     fi
+
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http.all.token -- "${LOGGLY_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http-bulk.all.token -- "${LOGGLY_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-syslog.all.token -- "${LOGGLY_PUBL_TOKEN}"
+
+    if [ -n "${PAPERTRAIL_TOKEN}" ] && [ "${PAPERTRAIL_TOKEN}" != 'PAPERTRAIL_TOKEN' ]; then
+        PAPERTRAIL_PUBL_TOKEN="${PAPERTRAIL_TOKEN}"
+    else
+        PAPERTRAIL_PUBL_TOKEN="${SWI_TOKEN}"
+    fi
+
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http-bulk.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
+    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
+
+    if [ -n "${PAPERTRAIL_HOST}" ] && [ -n "${PAPERTRAIL_PORT}" ]; then
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.host "${PAPERTRAIL_HOST}"
+       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.port "${PAPERTRAIL_PORT}"
+    fi
+
+
 }
 
 run_plugins_with_default_configs() {
@@ -49,12 +79,28 @@ run_plugins_with_default_configs() {
         mv "${PLUGINS_DIR}/apache.yaml.example" "${PLUGINS_DIR}/apache.yaml"
     fi
 
-    if [ "$SWISNAP_ENABLE_DOCKER" = "true" ]; then
+    if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
         mv "${PLUGINS_DIR}/docker.yaml.example" "${PLUGINS_DIR}/docker.yaml"
         if [[ -n "${HOST_PROC}" ]]; then
             sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
         fi
     fi
+
+    if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ] && [ -n "${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}" ]; then
+        DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
+        mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
+        yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
+        for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
+            yq w -i "${DOCKER_LOGS_CONFIG}" "plugins.(plugin_name==docker-logs).config.logs[+].filters.name.${cont_name}" true
+        done
+
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstdout' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstderr' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.follow' true
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.tail' all
+        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.since' --tag '!!str' ""
+    fi
+
 
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
         mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
@@ -62,6 +108,15 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
         mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+    fi
+
+    if [ "${SWISNAP_ENABLE_KUBERNETES_LOGS}" = "true" ]; then
+        KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
+        mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].watch_only' 'true'
+        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].options.fieldSelector' 'type==Normal'
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then
@@ -174,7 +229,6 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_DISABLE_HOSTAGENT}" = "true" ]; then
-        rm "${TASK_AUTOLOAD_DIR}/task-aosystem-warmup.yaml"
         rm "${TASK_AUTOLOAD_DIR}/task-aosystem.yaml"
     fi
 

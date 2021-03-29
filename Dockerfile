@@ -1,6 +1,6 @@
 FROM ubuntu:bionic
 
-LABEL authors='SolarWinds AppOptics team <support@appoptics.com>'
+LABEL authors='SolarWinds AppOptics team <technicalsupport@solarwinds.com>'
 
 USER root
 ARG DEBIAN_FRONTEND=noninteractive
@@ -37,6 +37,5 @@ COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 WORKDIR /opt/SolarWinds/Snap
 
 EXPOSE 21413
-
 # Run SolarWinds Snap Agent
 CMD ["/opt/SolarWinds/Snap/etc/init.sh"]
