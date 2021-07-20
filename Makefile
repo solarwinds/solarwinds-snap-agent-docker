@@ -5,7 +5,7 @@ USER=solarwinds
 REPOSITORY=solarwinds-snap-agent-docker
 CURRENT_IMAGE=$(USER)/$(REPOSITORY):$(TAG)
 LATEST_IMAGE=$(USER)/$(REPOSITORY):latest
-LATEST_ECR_TAG=${REPOSITORY_URI}:latest
+LATEST_ECR_TAG=${ECR_REPOSITORY_URI}:latest
 
 .PHONY: build
 build: 
