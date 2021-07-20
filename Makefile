@@ -5,14 +5,15 @@ USER=solarwinds
 REPOSITORY=solarwinds-snap-agent-docker
 CURRENT_IMAGE=$(USER)/$(REPOSITORY):$(TAG)
 LATEST_IMAGE=$(USER)/$(REPOSITORY):latest
+ECR_TAG=${REPOSITORY_URI}:latest
 
 .PHONY: build
 build: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) -t ${ECR_TAG} --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-test
 build-test: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) --build-arg swisnap_repo=swisnap-stg --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) -t ${ECR_TAG} --build-arg swisnap_repo=swisnap-stg --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-and-release-docker
 build-and-release-docker: build
