@@ -16,7 +16,7 @@ IMAGE_BUILD_ORIGIN_TAG=${ECR_REPOSITORY_URI}:${IMAGE_BUILD_ORIGIN}
 
 .PHONY: build
 build: 
-	@docker build -t $(IMAGE_BUILD_ORIGIN_TAG) -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) -t ${LATEST_ECR_TAG} --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(IMAGE_BUILD_ORIGIN_TAG) --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-test
 build-test: 
