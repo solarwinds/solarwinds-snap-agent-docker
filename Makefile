@@ -3,6 +3,9 @@ DOCKERFILE_VERSION=4.3.0
 ifeq ($(SWISNAP_VERSION),)
 	SWISNAP_VERSION=4.1.0.1024
 endif
+ifeq ($(IMAGE_BUILD_ORIGIN),)
+	IMAGE_BUILD_ORIGIN="manual_build"
+endif
 TAG=$(DOCKERFILE_VERSION)-$(SWISNAP_VERSION)
 USER=solarwinds
 REPOSITORY=solarwinds-snap-agent-docker
@@ -12,7 +15,7 @@ LATEST_ECR_TAG=${ECR_REPOSITORY_URI}:latest
 
 .PHONY: build
 build: 
-	@docker build -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) -t ${LATEST_ECR_TAG} --build-arg swisnap_version=$(SWISNAP_VERSION) .
+	@docker build -t $(IMAGE_BUILD_ORIGIN) -t $(CURRENT_IMAGE) -t $(LATEST_IMAGE) -t ${LATEST_ECR_TAG} --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: build-test
 build-test: 
