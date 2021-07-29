@@ -14,5 +14,5 @@ configMapGenerator:
       - SWISNAP_ENABLE_KUBERNETES_LOGS=false
 
 images:
-  - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.3.0-4.1.0.1024
+  - name: 858939916050.dkr.ecr.us-east-1.amazonaws.com/host-agent-docker-images
+    newTag: circleci_build_5a44c386-e043-4817-8c8f-0480c1482f20
