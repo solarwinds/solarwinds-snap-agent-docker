@@ -1,8 +1,6 @@
-DOCKERFILE_VERSION=4.3.0
+DOCKERFILE_VERSION=$(python3 -c "import yaml; print(yaml.load(open('versions.yml'), yaml.SafeLoader)['dockerfile'])")
+SWISNAP_VERSION=$(python3 -c "import yaml; print(yaml.load(open('versions.yml'), yaml.SafeLoader)['swisnap'])")
 
-ifeq ($(SWISNAP_VERSION),)
-	SWISNAP_VERSION=4.1.0.1024
-endif
 ifeq ($(IMAGE_BUILD_ORIGIN),)
 	IMAGE_BUILD_ORIGIN="manual_build"
 endif
