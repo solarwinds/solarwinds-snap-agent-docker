@@ -36,10 +36,8 @@ circleci:  ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
 
 get-versions: py-deps
-	SHELL:=/usr/bin/env python3
-	DOCKERFILE_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['dockerfile']))
-	SWISNAP_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['swisnap']))
-
+	DOCKERFILE_VERSION=$(python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile)
+	SWISNAP_VERSION=$(spython3 scripts/get_value_from_yml.py --config versions.yml --key swisnap)
 
 py-deps:
 	@python3 -m pip install pyyaml
