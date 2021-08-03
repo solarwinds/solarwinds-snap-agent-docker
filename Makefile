@@ -1,14 +1,10 @@
-SHELL:=/usr/bin/env python3
-DOCKERFILE_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['dockerfile']))
-SWISNAP_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['swisnap']))
-
 ifeq ($(IMAGE_BUILD_ORIGIN),)
 	IMAGE_BUILD_ORIGIN="manual_build"
 endif
 IMAGE_BUILD_ORIGIN_TAG=${ECR_REPOSITORY_URI}:${IMAGE_BUILD_ORIGIN}
 
 .PHONY: build
-build:
+build: get-versions
 	$(info "Image tag:" $(IMAGE_BUILD_ORIGIN_TAG))
 	$(info "SWISNAP version:" $(SWISNAP_VERSION))
 	@docker build -t $(IMAGE_BUILD_ORIGIN_TAG) --build-arg swisnap_version=$(SWISNAP_VERSION) .
@@ -38,3 +34,12 @@ delete-deployment:
 .PHONY: circleci 
 circleci:  ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
+
+get-versions: py-deps
+	SHELL:=/usr/bin/env python3
+	DOCKERFILE_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['dockerfile']))
+	SWISNAP_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['swisnap']))
+
+
+py-deps:
+	@python3 -m pip install pyyaml
