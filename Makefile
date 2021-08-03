@@ -1,6 +1,6 @@
-CB = )
-DOCKERFILE_VERSION=$(python3 -c "import yaml; print(yaml.load(open('versions.yml'$(CP), yaml.SafeLoader$(CP)['dockerfile']$(CP)")
-SWISNAP_VERSION=$(python3 -c "import yaml; print(yaml.load(open('versions.yml'$(CP), yaml.SafeLoader$(CP)['swisnap']$(CP)")
+SHELL:=/usr/bin/env python3
+DOCKERFILE_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['dockerfile']))
+SWISNAP_VERSION=$(shell import yaml; print(yaml.load(open('versions.yml') , yaml.SafeLoader)['swisnap']))
 
 ifeq ($(IMAGE_BUILD_ORIGIN),)
 	IMAGE_BUILD_ORIGIN="manual_build"
