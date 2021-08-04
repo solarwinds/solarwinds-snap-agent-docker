@@ -36,10 +36,9 @@ circleci:  ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
 
 get-versions: py-deps
-	@python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile
-	DOCKERFILE_VERSION=$(python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile)
-	SWISNAP_VERSION=$(python3 scripts/get_value_from_yml.py --config versions.yml --key swisnap)
-	$(info "Image tag:" $(DOCKERFILE_VERSION))
+	$(eval DOCKERFILE_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile))
+	$(eval SWISNAP_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key swisnap))
+	$(info "DOCKERFILE version:" $(DOCKERFILE_VERSION))
 	$(info "SWISNAP version:" $(SWISNAP_VERSION))
 
 py-deps:
