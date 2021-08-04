@@ -35,11 +35,20 @@ delete-deployment:
 circleci:  ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
 
+.PHONY: get-versions
 get-versions: py-deps
 	$(eval DOCKERFILE_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile))
 	$(eval SWISNAP_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key swisnap))
+	$(eval TAG_VERSION := $(DOCKERFILE_VERSION)_$(SWISNAP_VERSION))
 	$(info "DOCKERFILE version:" $(DOCKERFILE_VERSION))
 	$(info "SWISNAP version:" $(SWISNAP_VERSION))
 
+.PHONY: py-deps
 py-deps:
 	@python3 -m pip install pyyaml
+
+.PHONY: update-image-version
+update-image-version: get-versions
+	@sed -i.bak 's/^\(.*newTag:[[:space:]]\)[0-9\.-]*/\1${TAG_VERSION}/' deploy/overlays/stable/daemonset/kustomization.yaml
+	@sed -i.bak 's/^\(.*newTag:[[:space:]]\)[0-9\.-]*/\1${TAG_VERSION}/' deploy/overlays/stable/deployment/kustomization.yaml
+	@sed -i.bak 's/^\(.*newTag:[[:space:]]\)[0-9\.-]*/\1${TAG_VERSION}/' deploy/overlays/stable/events-collector/kustomization.yaml
