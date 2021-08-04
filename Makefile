@@ -5,8 +5,6 @@ IMAGE_BUILD_ORIGIN_TAG=${ECR_REPOSITORY_URI}:${IMAGE_BUILD_ORIGIN}
 
 .PHONY: build
 build: get-versions
-	$(info "Image tag:" $(IMAGE_BUILD_ORIGIN_TAG))
-	$(info "SWISNAP version:" $(SWISNAP_VERSION))
 	@docker build -t $(IMAGE_BUILD_ORIGIN_TAG) --build-arg swisnap_version=$(SWISNAP_VERSION) .
 
 .PHONY: test
@@ -45,7 +43,7 @@ get-versions: py-deps
 
 .PHONY: py-deps
 py-deps:
-	@python3 -m pip install pyyaml
+	@python3 -m pip install -r scripts/requirements.txt
 
 .PHONY: update-image-version
 update-image-version: get-versions
