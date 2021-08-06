@@ -42,7 +42,7 @@ If these tokens are the same, there is no need to perform this step - in that ca
 # setting for loggly-http, loggly-http-bulk, loggly-syslog Logs Publishers
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 
-# setting for swi-logs-http-bulk, swi-logs-http Logs Publishers 
+# setting for swi-logs-http-bulk, swi-logs-http Logs Publishers
 kubectl create secret generic papertrail-token -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
 
 # setting for papertrail-syslog publisher
