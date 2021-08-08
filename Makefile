@@ -34,16 +34,12 @@ circleci:  ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
 
 .PHONY: get-versions
-get-versions: py-deps
-	$(eval DOCKERFILE_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key dockerfile))
-	$(eval SWISNAP_VERSION := $(shell python3 scripts/get_value_from_yml.py --config versions.yml --key swisnap))
+get-versions:
+	$(eval DOCKERFILE_VERSION := $(shell source versions.env && echo $$DOCKERFILE_VERSION))
+	$(eval SWISNAP_VERSION := $(shell source versions.env && echo $$SWISNAP_VERSION))
 	$(eval TAG_VERSION := $(DOCKERFILE_VERSION)_$(SWISNAP_VERSION))
-	$(info "DOCKERFILE version:" $(DOCKERFILE_VERSION))
-	$(info "SWISNAP version:" $(SWISNAP_VERSION))
-
-.PHONY: py-deps
-py-deps:
-	@python3 -m pip install -r scripts/requirements.txt
+	$(info DOCKERFILE version: $(DOCKERFILE_VERSION))
+	$(info SWISNAP version: $(SWISNAP_VERSION))
 
 .PHONY: update-image-version
 update-image-version: get-versions
