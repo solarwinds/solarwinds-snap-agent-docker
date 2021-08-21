@@ -41,8 +41,8 @@ circleci:  ## Note: This expects you to have circleci cli installed locally
 
 .PHONY: get-versions
 get-versions:
-	$(eval DOCKERFILE_VERSION := $(shell . versions.env && echo $$DOCKERFILE_VERSION))
-	$(eval SWISNAP_VERSION := $(shell . versions.env && echo $$SWISNAP_VERSION))
+	$(eval DOCKERFILE_VERSION := $(shell . $$PWD/versions.env && echo $$DOCKERFILE_VERSION))
+	$(eval SWISNAP_VERSION := $(shell . $$PWD/versions.env && echo $$SWISNAP_VERSION))
 	$(eval TAG_VERSION := $(DOCKERFILE_VERSION)_$(SWISNAP_VERSION))
 	$(info DOCKERFILE version: $(DOCKERFILE_VERSION))
 	$(info SWISNAP version: $(SWISNAP_VERSION))
