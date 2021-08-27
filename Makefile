@@ -36,7 +36,7 @@ delete-deployment:
 	kustomize delete -k ./deploy/base/deployment
 
 .PHONY: circleci 
-circleci:  ## Note: This expects you to have circleci cli installed locally
+circleci:   ## Note: This expects you to have circleci cli installed locally
 	circleci local execute --job build --job validate
 
 .PHONY: get-versions
