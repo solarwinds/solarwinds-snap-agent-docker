@@ -42,7 +42,7 @@ If these tokens are the same, there is no need to perform this step - in that ca
 # setting for loggly-http, loggly-http-bulk, loggly-syslog Logs Publishers
 kubectl create secret generic loggly-token -n kube-system --from-literal=LOGGLY_TOKEN=<REPLACE WITH LOGGLY TOKEN>
 
-# setting for swi-logs-http-bulk, swi-logs-http Logs Publishers 
+# setting for swi-logs-http-bulk, swi-logs-http Logs Publishers
 kubectl create secret generic papertrail-token -n kube-system --from-literal=PAPERTRAIL_TOKEN=<REPLACE WITH PAPERTRAIL TOKEN>
 
 # setting for papertrail-syslog publisher
@@ -464,11 +464,3 @@ Note: If these tokens are the same, there is no need to perform this step - in t
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
 <img src="kubernetes-appoptics-dashboard.png" width="400px" align="middle">
-
-## Development
-
-The included Kubernetes resources rely on a Docker image from [Docker Hub](https://hub.docker.com/r/solarwinds/solarwinds-snap-agent-docker), see the [Dockerfile](Dockerfile) for more details. You can build and push this by updating the tag in the [Makefile](Makefile) and running:
-```
-make build-and-release-docker
-```
-After new custom Docker image is succesfuly released to Docker Hub, please remember to update corresponding entry in stable overlay for used [Kubernetes objects](deploy/base/).
