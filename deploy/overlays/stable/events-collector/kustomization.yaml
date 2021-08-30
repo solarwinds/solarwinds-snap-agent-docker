@@ -7,4 +7,4 @@ bases:
 
 images:
   - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.3.0-4.1.0.1024
+    newTag: 4.3.1-4.3.0.1156
