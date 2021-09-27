@@ -202,7 +202,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_PROMETHEUS}" = "true" ]; then
         PROMETHEUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-prometheus.yaml"
-        check_if_plugin_supported "Prometheus" ${PROMETHEUS_CONFIG}.example"
+        check_if_plugin_supported "Prometheus" "${PROMETHEUS_CONFIG}.example"
         mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
         yq w -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.monitor_kubernetes_pods true
         yq d -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.urls
