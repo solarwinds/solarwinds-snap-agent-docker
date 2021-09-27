@@ -16,5 +16,4 @@ configMapGenerator:
 
 images:
   - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.3.1-4.3.0.1156
-
+    newTag: 4.4.0-4.3.0.1156

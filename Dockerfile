@@ -23,7 +23,8 @@ RUN arch="$(uname -m)" && if [ "${arch}" = "aarch64" ]; then \
       yq_arch=amd64; \ 
     fi && \ 
     curl -L "https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_${yq_arch}" -o yq && \
-    mv yq /usr/bin/yq
+    mv yq /usr/bin/yq && \
+    chmod +x /usr/bin/yq
 
 ARG swisnap_version
 RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ bionic main" > /etc/apt/sources.list.d/swisnap.list && \

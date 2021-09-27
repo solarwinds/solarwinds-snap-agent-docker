@@ -76,18 +76,23 @@ swisnap_config_setup() {
 run_plugins_with_default_configs() {
     # Set to true to enable or disable specific plugins
     if [ "${SWISNAP_ENABLE_APACHE}" = "true" ]; then
-        mv "${PLUGINS_DIR}/apache.yaml.example" "${PLUGINS_DIR}/apache.yaml"
+        apache_plugin_config="${PLUGINS_DIR}/apache.yaml.example"
+        check_if_plugin_supported Apache "${apache_plugin_config}"
+        mv "${apache_plugin_config}" "${PLUGINS_DIR}/apache.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
-        mv "${PLUGINS_DIR}/docker.yaml.example" "${PLUGINS_DIR}/docker.yaml"
+        docker_plugin_config="${PLUGINS_DIR}/docker.yaml"
+        check_if_plugin_supported Docker "${docker_plugin_config}.example"
+        mv "${docker_plugin_config}.example" "${docker_plugin_config}"
         if [[ -n "${HOST_PROC}" ]]; then
-            sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
+            sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${docker_plugin_config}"
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ] && [ -n "${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}" ]; then
         DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
+        check_if_plugin_supported "Docker Logs" "${DOCKER_LOGS_CONFIG}.example"
         mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
         yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
         for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
@@ -103,15 +108,18 @@ run_plugins_with_default_configs() {
 
 
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
+        check_if_plugin_supported Elasticsearch "${PLUGINS_DIR}/elasticsearch.yaml.example"
         mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
+        check_if_plugin_supported Kubernetes "${PLUGINS_DIR}/kubernetes.yaml.example" 
         mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES_LOGS}" = "true" ]; then
         KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
+        check_if_plugin_supported "Kubernetes Logs" "${KUBERNETES_LOGS_CONFIG}.example"
         mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
         yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
         yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
@@ -121,6 +129,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then
         NGINX_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx.yaml"
+        check_if_plugin_supported Nginx "${NGINX_CONFIG}.example"
         mv "${NGINX_CONFIG}.example" "${NGINX_CONFIG}"
         if [[ -n "${NGINX_STATUS_URI}" ]]; then
            yq d -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls'
@@ -134,6 +143,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_NGINX_PLUS}" = "true" ]; then
         NGINX_PLUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus.yaml"
+        check_if_plugin_supported "Nginx Plus" "${NGINX_PLUS_CONFIG}.example"
         mv "${NGINX_PLUS_CONFIG}.example" "${NGINX_PLUS_CONFIG}"
         if [[ -n "${NGINX_PLUS_STATUS_URI}" ]]; then
            yq d -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls'
@@ -147,6 +157,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_NGINX_PLUS_API}" = "true" ]; then
         NGINX_PLUS_API_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus_api.yaml"
+        check_if_plugin_supported "Nginx Plus Api" "${NGINX_PLUS_API_CONFIG}.example"
         mv "${NGINX_PLUS_API_CONFIG}.example" "${NGINX_PLUS_API_CONFIG}"
         if [[ -n "${NGINX_PLUS_API_URI}" ]]; then
            yq d -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls'
@@ -159,14 +170,17 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_ENABLE_MESOS}" = "true" ]; then
+        check_if_plugin_supported Mesos "${PLUGINS_DIR}/mesos.yaml.example"
         mv "${PLUGINS_DIR}/mesos.yaml.example" "${PLUGINS_DIR}/mesos.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_MONGODB}" = "true" ]; then
+        check_if_plugin_supported MongoDB "${PLUGINS_DIR}/mongodb.yaml.example"
         mv "${PLUGINS_DIR}/mongodb.yaml.example" "${PLUGINS_DIR}/mongodb.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_MYSQL}" = "true" ]; then
+        check_if_plugin_supported MySQL "${PLUGINS_DIR}/mysql.yaml.example"
         mv "${PLUGINS_DIR}/mysql.yaml.example" "${PLUGINS_DIR}/mysql.yaml"
         if [[ -n "${MYSQL_USER}" && -n "${MYSQL_HOST}" && -n "${MYSQL_PORT}" ]]; then
             yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
@@ -177,6 +191,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_POSTGRESQL}" = "true" ]; then
         POSTGRES_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-postgresql.yaml"
+        check_if_plugin_supported "PostgreSQL" "${POSTGRES_CONFIG}.example"
         mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
         if [[ -n "${POSTGRES_ADDRESS}" ]]; then
             yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgresql.address' "${POSTGRES_ADDRESS}"
@@ -187,17 +202,20 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_PROMETHEUS}" = "true" ]; then
         PROMETHEUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-prometheus.yaml"
+        check_if_plugin_supported "Prometheus" ${PROMETHEUS_CONFIG}.example"
         mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
         yq w -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.monitor_kubernetes_pods true
         yq d -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.urls
     fi
 
     if [ "${SWISNAP_ENABLE_RABBITMQ}" = "true" ]; then
+        check_if_plugin_supported "RabbitMQ" "${PLUGINS_DIR}/rabbitmq.yaml.example"
         mv "${PLUGINS_DIR}/rabbitmq.yaml.example" "${PLUGINS_DIR}/rabbitmq.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_REDIS}" = "true" ]; then
         REDIS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-redis.yaml"
+        check_if_plugin_supported "Redis" "${REDIS_CONFIG}.example"
         mv "${REDIS_CONFIG}.example" "${REDIS_CONFIG}"
         if [[ -n "${REDIS_SERVERS}" ]]; then
             yq d -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers'
@@ -211,6 +229,7 @@ run_plugins_with_default_configs() {
 
     if [ "${SWISNAP_ENABLE_SOCKET_LISTENER}" = "true" ]; then
         SOCKET_LISTENER_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-socket_listener.yaml"
+        check_if_plugin_supported "Socket Listener" "${SOCKET_LISTENER_CONFIG}" 
         mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
         if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
             echo "INFO: setting service_address for Socket Listener plugin to ${SOCKET_SERVICE_ADDRESS} and data format to ${SOCKET_DATA_FORMAT}"
@@ -221,10 +240,12 @@ run_plugins_with_default_configs() {
         fi
     fi
     if [ "${SWISNAP_ENABLE_STATSD}" = "true" ]; then
+        check_if_plugin_supported Statsd "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example"
         mv "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml"
     fi
 
     if [ "${SWISNAP_ENABLE_ZOOKEEPER}" = "true" ]; then
+        check_if_plugin_supported Zookeeper "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml.example"
         mv "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml"
     fi
 
@@ -246,6 +267,14 @@ set_custom_tags() {
             VALUE=${TAG##*=}
             yq w -i ${CONFIG_FILE} "control.tags./[${KEY}]" "${VALUE}"
         done
+    fi
+}
+
+check_if_plugin_supported() {
+    local plugin="${1}"
+    local plugin_config="${2}"
+    if [[ ! -f "${plugin_config}" ]]; then
+        echo "WARNING. SolarWinds Snap Agent ${plugin} integration not supported. Please contact technicalsupport@solarwinds.com"
     fi
 }
 
