@@ -25,10 +25,10 @@ plugins:
         watch_only: true
         options:
           fieldSelector: "type==Normal"
-      - namespace: kube-system
-        watch_only: true
-        options:
-          fieldSelector: "type==Normal"
+      #- namespace: kube-system
+      #  watch_only: true
+      #  options:
+      #    fieldSelector: "type==Warning"
 
     #tags:
     #  /k8s-events/[namespace=my_namespace]/string_line:
