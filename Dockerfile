@@ -11,9 +11,9 @@ RUN apt-get update && \
     apt-get -y install \
       apt-transport-https \
       ca-certificates \
-      gnupg \
+      curl \
       docker.io \
-      curl && \
+      gnupg && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
