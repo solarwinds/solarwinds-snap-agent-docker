@@ -76,156 +76,197 @@ swisnap_config_setup() {
 run_plugins_with_default_configs() {
     # Set to true to enable or disable specific plugins
     if [ "${SWISNAP_ENABLE_APACHE}" = "true" ]; then
-        mv "${PLUGINS_DIR}/apache.yaml.example" "${PLUGINS_DIR}/apache.yaml"
+        apache_plugin_config="${PLUGINS_DIR}/apache.yaml.example"
+        if check_if_plugin_supported Apache "${apache_plugin_config}"; then
+            mv "${apache_plugin_config}" "${PLUGINS_DIR}/apache.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
-        mv "${PLUGINS_DIR}/docker.yaml.example" "${PLUGINS_DIR}/docker.yaml"
-        if [[ -n "${HOST_PROC}" ]]; then
-            sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${PLUGINS_DIR}/docker.yaml"
+        docker_plugin_config="${PLUGINS_DIR}/docker.yaml"
+        if check_if_plugin_supported Docker "${docker_plugin_config}.example"; then
+            mv "${docker_plugin_config}.example" "${docker_plugin_config}"
+            if [[ -n "${HOST_PROC}" ]]; then
+                sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${docker_plugin_config}"
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_DOCKER_LOGS}" = "true" ] && [ -n "${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}" ]; then
         DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
-        mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
-        yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
-        for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
-            yq w -i "${DOCKER_LOGS_CONFIG}" "plugins.(plugin_name==docker-logs).config.logs[+].filters.name.${cont_name}" true
-        done
+        if check_if_plugin_supported "Docker Logs" "${DOCKER_LOGS_CONFIG}.example"; then
+            mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
+            yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
+            for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
+                yq w -i "${DOCKER_LOGS_CONFIG}" "plugins.(plugin_name==docker-logs).config.logs[+].filters.name.${cont_name}" true
+            done
 
-        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstdout' true
-        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstderr' true
-        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.follow' true
-        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.tail' all
-        yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.since' --tag '!!str' ""
+            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstdout' true
+            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstderr' true
+            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.follow' true
+            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.tail' all
+            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.since' --tag '!!str' ""
+        fi
     fi
 
 
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
-        mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
+        if check_if_plugin_supported Elasticsearch "${PLUGINS_DIR}/elasticsearch.yaml.example"; then
+            mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
-        mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+        if check_if_plugin_supported Kubernetes "${PLUGINS_DIR}/kubernetes.yaml.example"; then
+            mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES_LOGS}" = "true" ]; then
         KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
-        mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
-        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
-        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
-        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].watch_only' 'true'
-        yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].options.fieldSelector' 'type==Normal'
+        if check_if_plugin_supported "Kubernetes Logs" "${KUBERNETES_LOGS_CONFIG}.example"; then
+            mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
+            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
+            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
+            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].watch_only' 'true'
+            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].options.fieldSelector' 'type==Normal'
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX}" = "true" ]; then
         NGINX_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx.yaml"
-        mv "${NGINX_CONFIG}.example" "${NGINX_CONFIG}"
-        if [[ -n "${NGINX_STATUS_URI}" ]]; then
-           yq d -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls'
-           for nginx_uri in ${NGINX_STATUS_URI}; do
-               yq w -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls[+]' "${nginx_uri}"
-           done
-        else
-            echo "WARNING: NGINX_STATUS_URI var was not set for Nginx plugin"
+        if check_if_plugin_supported Nginx "${NGINX_CONFIG}.example"; then
+            mv "${NGINX_CONFIG}.example" "${NGINX_CONFIG}"
+            if [[ -n "${NGINX_STATUS_URI}" ]]; then
+               yq d -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls'
+               for nginx_uri in ${NGINX_STATUS_URI}; do
+                   yq w -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls[+]' "${nginx_uri}"
+               done
+            else
+                echo "WARNING: NGINX_STATUS_URI var was not set for Nginx plugin"
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX_PLUS}" = "true" ]; then
         NGINX_PLUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus.yaml"
-        mv "${NGINX_PLUS_CONFIG}.example" "${NGINX_PLUS_CONFIG}"
-        if [[ -n "${NGINX_PLUS_STATUS_URI}" ]]; then
-           yq d -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls'
-           for nginx_plus_uri in ${NGINX_PLUS_STATUS_URI}; do
-               yq w -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls[+]' "${nginx_plus_uri}"
-           done
-        else
-            echo "WARNING: NGINX_PLUS_STATUS_URI var was not set for Nginx Plus plugin"
+        if check_if_plugin_supported "Nginx Plus" "${NGINX_PLUS_CONFIG}.example"; then
+            mv "${NGINX_PLUS_CONFIG}.example" "${NGINX_PLUS_CONFIG}"
+            if [[ -n "${NGINX_PLUS_STATUS_URI}" ]]; then
+               yq d -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls'
+               for nginx_plus_uri in ${NGINX_PLUS_STATUS_URI}; do
+                   yq w -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls[+]' "${nginx_plus_uri}"
+               done
+            else
+                echo "WARNING: NGINX_PLUS_STATUS_URI var was not set for Nginx Plus plugin"
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_NGINX_PLUS_API}" = "true" ]; then
         NGINX_PLUS_API_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-nginx_plus_api.yaml"
-        mv "${NGINX_PLUS_API_CONFIG}.example" "${NGINX_PLUS_API_CONFIG}"
-        if [[ -n "${NGINX_PLUS_API_URI}" ]]; then
-           yq d -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls'
-           for nginx_plus_uri in ${NGINX_PLUS_API_URI}; do
-               yq w -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls[+]' "${nginx_plus_uri}"
-           done
-        else
-            echo "WARNING: NGINX_PLUS_API_URI var was not set for Nginx Plus Api plugin"
+        if check_if_plugin_supported "Nginx Plus Api" "${NGINX_PLUS_API_CONFIG}.example"; then
+            mv "${NGINX_PLUS_API_CONFIG}.example" "${NGINX_PLUS_API_CONFIG}"
+            if [[ -n "${NGINX_PLUS_API_URI}" ]]; then
+               yq d -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls'
+               for nginx_plus_uri in ${NGINX_PLUS_API_URI}; do
+                   yq w -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls[+]' "${nginx_plus_uri}"
+               done
+            else
+                echo "WARNING: NGINX_PLUS_API_URI var was not set for Nginx Plus Api plugin"
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_MESOS}" = "true" ]; then
-        mv "${PLUGINS_DIR}/mesos.yaml.example" "${PLUGINS_DIR}/mesos.yaml"
+        if check_if_plugin_supported Mesos "${PLUGINS_DIR}/mesos.yaml.example"; then
+            mv "${PLUGINS_DIR}/mesos.yaml.example" "${PLUGINS_DIR}/mesos.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_MONGODB}" = "true" ]; then
-        mv "${PLUGINS_DIR}/mongodb.yaml.example" "${PLUGINS_DIR}/mongodb.yaml"
+        if check_if_plugin_supported MongoDB "${PLUGINS_DIR}/mongodb.yaml.example"; then
+            mv "${PLUGINS_DIR}/mongodb.yaml.example" "${PLUGINS_DIR}/mongodb.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_MYSQL}" = "true" ]; then
-        mv "${PLUGINS_DIR}/mysql.yaml.example" "${PLUGINS_DIR}/mysql.yaml"
-        if [[ -n "${MYSQL_USER}" && -n "${MYSQL_HOST}" && -n "${MYSQL_PORT}" ]]; then
-            yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
-        else
-            echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
+        if check_if_plugin_supported MySQL "${PLUGINS_DIR}/mysql.yaml.example"; then
+            mv "${PLUGINS_DIR}/mysql.yaml.example" "${PLUGINS_DIR}/mysql.yaml"
+            if [[ -n "${MYSQL_USER}" && -n "${MYSQL_HOST}" && -n "${MYSQL_PORT}" ]]; then
+                yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
+            else
+                echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_POSTGRESQL}" = "true" ]; then
         POSTGRES_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-postgresql.yaml"
-        mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
-        if [[ -n "${POSTGRES_ADDRESS}" ]]; then
-            yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgresql.address' "${POSTGRES_ADDRESS}"
-        else
-            echo "WARNING: POSTGRES_ADDRESS var was not set for Postgres plugin."
+        if check_if_plugin_supported "PostgreSQL" "${POSTGRES_CONFIG}.example"; then
+            mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
+            if [[ -n "${POSTGRES_ADDRESS}" ]]; then
+                yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgresql.address' "${POSTGRES_ADDRESS}"
+            else
+                echo "WARNING: POSTGRES_ADDRESS var was not set for Postgres plugin."
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_PROMETHEUS}" = "true" ]; then
         PROMETHEUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-prometheus.yaml"
-        mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
-        yq w -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.monitor_kubernetes_pods true
-        yq d -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.urls
+        if check_if_plugin_supported "Prometheus" "${PROMETHEUS_CONFIG}.example"; then
+            mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
+            yq w -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.monitor_kubernetes_pods true
+            yq d -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.urls
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_RABBITMQ}" = "true" ]; then
-        mv "${PLUGINS_DIR}/rabbitmq.yaml.example" "${PLUGINS_DIR}/rabbitmq.yaml"
+        if check_if_plugin_supported "RabbitMQ" "${PLUGINS_DIR}/rabbitmq.yaml.example"; then
+            mv "${PLUGINS_DIR}/rabbitmq.yaml.example" "${PLUGINS_DIR}/rabbitmq.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_REDIS}" = "true" ]; then
         REDIS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-redis.yaml"
-        mv "${REDIS_CONFIG}.example" "${REDIS_CONFIG}"
-        if [[ -n "${REDIS_SERVERS}" ]]; then
-            yq d -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers'
-            for redis_server in ${REDIS_SERVERS}; do
-                yq w -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers[+]' "${redis_server}"
-            done
-        else
-            echo "WARNING: REDIS_SERVERS var was not set for Redis plugin."
+        if check_if_plugin_supported "Redis" "${REDIS_CONFIG}.example"; then
+            mv "${REDIS_CONFIG}.example" "${REDIS_CONFIG}"
+            if [[ -n "${REDIS_SERVERS}" ]]; then
+                yq d -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers'
+                for redis_server in ${REDIS_SERVERS}; do
+                    yq w -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers[+]' "${redis_server}"
+                done
+            else
+                echo "WARNING: REDIS_SERVERS var was not set for Redis plugin."
+            fi
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_SOCKET_LISTENER}" = "true" ]; then
         SOCKET_LISTENER_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-socket_listener.yaml"
-        mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
-        if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
-            echo "INFO: setting service_address for Socket Listener plugin to ${SOCKET_SERVICE_ADDRESS} and data format to ${SOCKET_DATA_FORMAT}"
-            yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.service_address' "${SOCKET_SERVICE_ADDRESS}"
-            yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.data_format' "${SOCKET_DATA_FORMAT}"
-        else
-            echo "WARNING: both SOCKET_SERVICE_ADDRESS and SOCKET_DATA_FORMAT needs to be set for socket listener plugin"
+        if check_if_plugin_supported "Socket Listener" "${SOCKET_LISTENER_CONFIG}"; then
+            mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
+            if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
+                echo "INFO: setting service_address for Socket Listener plugin to ${SOCKET_SERVICE_ADDRESS} and data format to ${SOCKET_DATA_FORMAT}"
+                yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.service_address' "${SOCKET_SERVICE_ADDRESS}"
+                yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.data_format' "${SOCKET_DATA_FORMAT}"
+            else
+                echo "WARNING: both SOCKET_SERVICE_ADDRESS and SOCKET_DATA_FORMAT needs to be set for socket listener plugin"
+            fi
         fi
     fi
+
     if [ "${SWISNAP_ENABLE_STATSD}" = "true" ]; then
-        mv "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml"
+        if check_if_plugin_supported Statsd "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example"; then
+            mv "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-statsd.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_ENABLE_ZOOKEEPER}" = "true" ]; then
-        mv "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml"
+        if check_if_plugin_supported Zookeeper "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml.example"; then
+            mv "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml.example" "${TASK_AUTOLOAD_DIR}/task-bridge-zookeeper.yaml"
+        fi
     fi
 
     if [ "${SWISNAP_DISABLE_HOSTAGENT}" = "true" ]; then
@@ -247,6 +288,16 @@ set_custom_tags() {
             yq w -i ${CONFIG_FILE} "control.tags./[${KEY}]" "${VALUE}"
         done
     fi
+}
+
+check_if_plugin_supported() {
+    local plugin="${1}"
+    local plugin_config="${2}"
+    if [[ ! -f "${plugin_config}" ]]; then
+        echo "WARNING. SolarWinds Snap Agent ${plugin} integration not supported. Please contact technicalsupport@solarwinds.com"
+        return 1
+    fi
+    return 0
 }
 
 main() {
