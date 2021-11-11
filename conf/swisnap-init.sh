@@ -11,6 +11,7 @@ PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
 swisnap_config_setup() {
+    echo "Running swisnap_config_setup"
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
     if [ -n "${SOLARWINDS_TOKEN}" ] && [ "${SOLARWINDS_TOKEN}" != 'SOLARWINDS_TOKEN' ]; then
         SWI_TOKEN="${SOLARWINDS_TOKEN}"
@@ -238,6 +239,16 @@ run_plugins_with_default_configs() {
 
 }
 
+run_plugins_customizations() {
+    if [[ "${SWISNAP_CUSTOMIZE_ELASTICSEARCH}" == "true" ]] && [ -f "/tmp/customize_elasticsearch.sh" ]; then
+        bash /tmp/customize_elasticsearch.sh
+    fi
+
+    if [[ "${SWISNAP_CUSTOMIZE_PUBLISHER_APPOPTICS}" == "true" ]] && [ -f "/tmp/customize_publisher_appoptics.sh" ]; then
+        bash /tmp/customize_publisher_appoptics.sh
+    fi
+}
+
 set_custom_tags() {
     if [ -n "${APPOPTICS_CUSTOM_TAGS}" ]; then
         local IFS=","
@@ -252,6 +263,7 @@ set_custom_tags() {
 main() {
     swisnap_config_setup
     run_plugins_with_default_configs
+    run_plugins_customizations
     set_custom_tags
     exec "${SWISNAP_HOME}/sbin/swisnapd" --config "${CONFIG_FILE}" "${FLAGS[@]}"
 }
