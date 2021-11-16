@@ -239,6 +239,10 @@ run_plugins_with_default_configs() {
 
 }
 
+# Function provide possibilty to modify snap config files during container startup. Customizing script
+# have to be mounted in /tmp in the container. Script itself may for example check and use some 
+# attributes of the container that are unknown prior to starting it.
+
 run_plugins_customizations() {
     if [[ "${SWISNAP_CUSTOMIZE_ELASTICSEARCH}" == "true" ]] && [ -f "/tmp/customize_elasticsearch.sh" ]; then
         bash /tmp/customize_elasticsearch.sh
