@@ -87,9 +87,6 @@ run_plugins_with_default_configs() {
         cri_plugin_config="${TASK_AUTOLOAD_DIR}/task-cri.yaml"
         if check_if_plugin_supported CRI "${cri_plugin_config}.example"; then
             mv "${cri_plugin_config}.example" "${cri_plugin_config}"
-            if [[ -n "${HOST_PROC}" ]]; then
-                sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${cri_plugin_config}"
-            fi
         fi
     fi
 
