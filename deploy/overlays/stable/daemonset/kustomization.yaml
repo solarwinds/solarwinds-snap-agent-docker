@@ -15,5 +15,6 @@ configMapGenerator:
       - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES=""
 
 images:
-  - name: solarwinds/solarwinds-snap-agent-docker
-    newTag: 4.4.0-4.3.0.1156
+  - name: solarwinds/solarwinds-snap-agent-docker:latest
+    newName: swipoleszcz/swidummy
+    newTag: latest
