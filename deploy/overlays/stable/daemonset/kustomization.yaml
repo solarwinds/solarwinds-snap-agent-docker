@@ -34,7 +34,7 @@ spec:
             path: /run/containerd/containerd.sock
 
       containers:
-        name: swisnap-agent-ds
+      - name: swisnap-agent-ds
           volumeMounts:
             - name: docker-sock
               mountPath: /var/run/docker.sock
