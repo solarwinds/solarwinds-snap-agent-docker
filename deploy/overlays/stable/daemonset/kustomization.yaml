@@ -35,10 +35,10 @@ spec:
 
       containers:
       - name: swisnap-agent-ds
-          volumeMounts:
-            - name: docker-sock
-              mountPath: /var/run/docker.sock
-            # - name: dockershim-sock
-            #   mountPath: /var/run/dockershim.sock
-            - name: containerd-sock
-              mountPath: /run/containerd/containerd.sock
+        volumeMounts:
+          - name: docker-sock
+            mountPath: /var/run/docker.sock
+          # - name: dockershim-sock
+          #   mountPath: /var/run/dockershim.sock
+          - name: containerd-sock
+            mountPath: /run/containerd/containerd.sock
