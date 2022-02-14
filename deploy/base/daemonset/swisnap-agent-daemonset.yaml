@@ -101,12 +101,6 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 5
       volumes:
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
-        - name: dockershim-sock
-          hostPath:
-            path: /var/run/dockershim.sock
         - name: proc
           hostPath:
             path: /proc
