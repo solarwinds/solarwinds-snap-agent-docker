@@ -110,14 +110,27 @@ run_plugins_with_default_configs() {
         fi
     fi
 
-
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
+        elasticsearch_plugin_config="${TASK_AUTOLOAD_DIR}/task-elasticsearch.yaml"
+        if check_if_plugin_supported Elasticsearch "${elasticsearch_plugin_config}.example"; then
+            mv "${elasticsearch_plugin_config}.example" "${elasticsearch_plugin_config}"
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_ELASTICSEARCH_LEGACY}" = "true" ]; then
         if check_if_plugin_supported Elasticsearch "${PLUGINS_DIR}/elasticsearch.yaml.example"; then
             mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
+        kubernetes_plugin_config="${TASK_AUTOLOAD_DIR}/task-kubernetes.yaml"
+        if check_if_plugin_supported Kubernetes "${kubernetes_plugin_config}.example"; then
+            mv "${kubernetes_plugin_config}.example" "${kubernetes_plugin_config}"
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_KUBERNETES_LEGACY}" = "true" ]; then
         if check_if_plugin_supported Kubernetes "${PLUGINS_DIR}/kubernetes.yaml.example"; then
             mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
         fi
