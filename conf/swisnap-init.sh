@@ -9,6 +9,7 @@ CONFIG_FILE="${SWISNAP_HOME}/etc/config.yaml"
 PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
+API_PORT="21413"
 
 swisnap_config_setup() {
     echo "Running swisnap_config_setup"
@@ -44,7 +45,7 @@ swisnap_config_setup() {
     fi
 
     yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
-    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
+    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:${API_PORT}"
 
     # Logs Publishers releated configs
     if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
@@ -315,11 +316,16 @@ check_if_plugin_supported() {
     return 0
 }
 
+enable_swisnap_cli() {
+    export SNAP_URL="http://127.0.0.1:${API_PORT}"
+}
+
 main() {
     swisnap_config_setup
     run_plugins_with_default_configs
     run_plugins_customizations
     set_custom_tags
+    enable_swisnap_cli
     exec "${SWISNAP_HOME}/sbin/swisnapd" --config "${CONFIG_FILE}" "${FLAGS[@]}"
 }
 
