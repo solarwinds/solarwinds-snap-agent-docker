@@ -6,6 +6,8 @@ USER root
 ARG DEBIAN_FRONTEND=noninteractive
 ARG swisnap_repo=swisnap
 
+ENV SNAP_URL=http://127.0.0.1:21413
+
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get -y install \
