@@ -27,10 +27,8 @@ RUN arch="$(uname -m)" && if [ "${arch}" = "aarch64" ]; then \
     chmod +x /usr/bin/yq
 
 ARG swisnap_version
-RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ focal main" > /etc/apt/sources.list.d/swisnap.list && \
-  curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
-  apt-get update && \
-  apt-get -y install solarwinds-snap-agent=${swisnap_version} && \
+COPY /tmp/solarwinds-snap-agent_4.4.1.1351_amd64.deb /tmp
+RUN apt-get -y install /tmp/solarwinds-snap-agent_4.4.1.1351_amd64.deb && \
   usermod -aG root solarwinds && \
   apt-get -y purge curl && \
   apt-get clean && \

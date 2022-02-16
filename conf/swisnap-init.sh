@@ -10,6 +10,10 @@ PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
+enable_incluster(task_file) {
+    yq w -i "${task_file}" plugins[0].config.kubernetes.incluster -- "true"
+}
+
 swisnap_config_setup() {
     echo "Running swisnap_config_setup"
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
@@ -127,6 +131,9 @@ run_plugins_with_default_configs() {
         kubernetes_plugin_config="${TASK_AUTOLOAD_DIR}/task-kubernetes.yaml"
         if check_if_plugin_supported Kubernetes "${kubernetes_plugin_config}.example"; then
             mv "${kubernetes_plugin_config}.example" "${kubernetes_plugin_config}"
+            if [ "${IN_CLUSTER}" = "true" ]; then
+                enable_incluster "${kubernetes_plugin_config}"
+            fi
         fi
     fi
 

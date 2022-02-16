@@ -28,6 +28,7 @@ configMapGenerator:
       - SWISNAP_SECURE=true
       - HOST_PROC=/host/proc
       - LOG_LEVEL=WARN
+      - IN_CLUSTER=true
 
 resources:
   - swisnap-agent-deployment.yaml
