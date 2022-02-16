@@ -10,7 +10,8 @@ PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
-enable_incluster(task_file) {
+enable_incluster() {
+    local task_file="${1}"
     yq w -i "${task_file}" plugins[0].config.kubernetes.incluster -- "true"
 }
 
