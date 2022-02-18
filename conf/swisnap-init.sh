@@ -15,6 +15,12 @@ enable_incluster() {
     yq w -i "${task_file}" plugins[0].config.kubernetes.incluster -- "true"
 }
 
+modify_k8s_configpath() {
+    local task_file="${1}"
+    local kubeconfigpath="${2}"
+    yq w -i "${task_file}" plugins[0].config.kubernetes.kubeconfigpath -- "${kubeconfigpath}"
+}
+
 swisnap_config_setup() {
     echo "Running swisnap_config_setup"
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
@@ -134,6 +140,9 @@ run_plugins_with_default_configs() {
             mv "${kubernetes_plugin_config}.example" "${kubernetes_plugin_config}"
             if [ "${IN_CLUSTER}" = "true" ]; then
                 enable_incluster "${kubernetes_plugin_config}"
+            fi
+            if [ -n "${KUBERNETES_CONFIGPATH}" ]; then
+                modify_k8s_configpath "${KUBERNETES_CONFIGPATH}"
             fi
         fi
     fi
