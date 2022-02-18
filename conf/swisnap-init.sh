@@ -142,7 +142,7 @@ run_plugins_with_default_configs() {
                 enable_incluster "${kubernetes_plugin_config}"
             fi
             if [ -n "${KUBERNETES_CONFIGPATH}" ]; then
-                modify_k8s_configpath "${KUBERNETES_CONFIGPATH}"
+                modify_k8s_configpath "${kubernetes_plugin_config}" "${KUBERNETES_CONFIGPATH}"
             fi
         fi
     fi
