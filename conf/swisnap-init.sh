@@ -86,10 +86,10 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported Apache "${apache_plugin_config}.example"; then
             mv "${apache_plugin_config}.example" "${apache_plugin_config}"
         fi
-        if [[ -n "${APACHE_BASE_URL}" ]]; then
-            yq w -i "${apache_plugin_config}" 'plugins[0].config.apache.apache_mod_status_webservers[0].url' "${APACHE_BASE_URL}/server-status?auto"
+        if [[ -n "${APACHE_STATUS_URI}" ]]; then
+            yq w -i "${apache_plugin_config}" 'plugins[0].config.apache.apache_mod_status_webservers[0].url' "${APACHE_STATUS_URI}"
         else
-            echo "WARNING: variable APACHE_BASE_URL needs to be set for Apache plugin"
+            echo "WARNING: variable APACHE_STATUS_URI needs to be set for Apache plugin"
         fi
     fi
 
