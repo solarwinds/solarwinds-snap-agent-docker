@@ -122,6 +122,16 @@ run_plugins_with_default_configs() {
         fi
     fi
 
+    if [ "${SWISNAP_ENABLE_ORACLEDB}" = "true" ]; then
+        oracledb_plugin_config="${TASK_AUTOLOAD_DIR}/task-oracledb.yaml"
+        if check_if_plugin_supported Oracledb "${oracledb_plugin_config}.example"; then
+            mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
+            if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
+                yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
+            fi
+        fi
+    fi
+
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
         kubernetes_plugin_config="${TASK_AUTOLOAD_DIR}/task-kubernetes.yaml"
         if check_if_plugin_supported Kubernetes "${kubernetes_plugin_config}.example"; then

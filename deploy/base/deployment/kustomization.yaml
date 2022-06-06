@@ -20,6 +20,7 @@ configMapGenerator:
       - SWISNAP_ENABLE_MESOS=false
       - SWISNAP_ENABLE_MONGODB=false
       - SWISNAP_ENABLE_MYSQL=false
+      - SWISNAP_ENABLE_ORACLEDB=false
       - SWISNAP_ENABLE_RABBITMQ=false
       - SWISNAP_ENABLE_STATSD=false
       - SWISNAP_ENABLE_ZOOKEEPER=false
