@@ -70,12 +70,15 @@ Enable the Kubernetes plugin in the AppOptics UI and you should start seeing dat
 
 ### DaemonSet
 
-The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its nodes and gather system, processes and docker-related metrics. To deploy the DaemonSet to Kubernetes verify you have an `solarwinds-token` secret already created and run:
+The DaemonSet, by default, will give you insight into [containers](https://docs.appoptics.com/kb/host_infrastructure/#list-and-map-view) running within its nodes and gather system, processes and container-related metrics. To deploy the DaemonSet to Kubernetes verify you have an `solarwinds-token` secret already created and run:
 ``` bash
 kubectl apply -k ./deploy/overlays/stable/daemonset
 ```
 
-Enable the Docker plugin in the AppOptics UI and you should start seeing data trickle in.
+Starting from version 4.5.0-* the default monitored container engine is containerd.
+Enable the CRI plugin in the AppOptics UI and you should start seeing data trickle in.
+
+To fallback to the docker plugin and docker-based metrics  
 
 ### Sidecar
 
