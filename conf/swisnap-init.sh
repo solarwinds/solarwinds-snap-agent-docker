@@ -127,15 +127,15 @@ run_plugins_with_default_configs() {
         fi
     fi
 
-    if [ "${SWISNAP_ENABLE_ORACLEDB}" = "true" ]; then
-        oracledb_plugin_config="${TASK_AUTOLOAD_DIR}/task-oracledb.yaml"
-        if check_if_plugin_supported Oracledb "${oracledb_plugin_config}.example"; then
-            mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
-            if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
-                yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
-            else
-                echo "WARNING: all: ORACLEDB_USER, ORACLEDB_PASS, ORACLEDB_HOST, ORACLEDB_PORT, ORACLEDB_SERVICE_NAME variables needs to be set for OracleDB plugin"
-            fi
+    if [ "${SWISNAP_ENABLE_HAPROXY}" = "true" ]; then
+        haproxy_plugin_config="${TASK_AUTOLOAD_DIR}/task-haproxy.yaml"
+        if check_if_plugin_supported HAProxy "${haproxy_plugin_config}.example"; then
+            mv "${haproxy_plugin_config}.example" "${haproxy_plugin_config}"
+        fi
+        if [[ -n "${HAPROXY_STATS_URI}" ]]; then
+            yq w -i "${haproxy_plugin_config}" 'plugins[0].config.haproxy.endpoints[0].url' "${HAPROXY_STATS_URI}"
+        else
+            echo "WARNING: variable HAPROXY_STATS_URI needs to be set for HAProxy plugin"
         fi
     fi
 
@@ -224,6 +224,18 @@ run_plugins_with_default_configs() {
                 yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
             else
                 echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
+            fi
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_ORACLEDB}" = "true" ]; then
+        oracledb_plugin_config="${TASK_AUTOLOAD_DIR}/task-oracledb.yaml"
+        if check_if_plugin_supported OracleDB "${oracledb_plugin_config}.example"; then
+            mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
+            if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
+                yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
+            else
+                echo "WARNING: all: ORACLEDB_USER, ORACLEDB_PASS, ORACLEDB_HOST, ORACLEDB_PORT, ORACLEDB_SERVICE_NAME variables needs to be set for OracleDB plugin"
             fi
         fi
     fi

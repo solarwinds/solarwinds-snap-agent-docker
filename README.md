@@ -328,6 +328,7 @@ The following environment parameters are available:
  SWISNAP_DOCKER_LOGS_CONTAINER_NAMES | Space separated list of container names, for which log colelctor/forwarder should be set.
  SWISNAP_ENABLE_APACHE          | Set this to `true` to enable the Apache plugin. If enabled the following ENV vars are required to be set:<br>*APACHE_STATUS_URI*
  SWISNAP_ENABLE_ELASTICSEARCH   | Set this to `true` to enable the Elasticsearch plugin.
+ SWISNAP_ENABLE_HAPROXY         | Set this to `true` to enable the HAProxy plugin. If enabled the following ENV vars are required to be set:<br>*HAPROXY_STATS_URI*
  SWISNAP_ENABLE_KUBERNETES      | Set this to `true` to enable the Kubernetes plugin. Enabling this option on the DaemonSet will cause replication of Kubernetes metrics where the replication count is the number of pods with Kubernetes collection enabled minus one. Typically Kubernetes collection is only enabled on the Deployment asset.
  SWISNAP_ENABLE_KUBERNETES_LOGS | Set this to `true` to enable the default Kubernetes logs collector/forwarder. To enable this proper RBAC role have to be set (done for Deployment from this repo).
  SWISNAP_ENABLE_NGINX           | Set this to `true` to enable the Nginx plugin. If enabled the following ENV vars are required to be set:<br>*NGINX_STATUS_URI* - one, or multiple space-separeted link(s) to Nginx stub_status URI.
@@ -336,7 +337,7 @@ The following environment parameters are available:
  SWISNAP_ENABLE_MESOS           | Set this to `true` to enable the Mesos plugin.
  SWISNAP_ENABLE_MONGODB         | Set this to `true` to enable the MongoDB plugin.
  SWISNAP_ENABLE_MYSQL           | Set this to `true` to enable the MySQL plugin. If enabled the following ENV vars are required to be set:<br>*MYSQL_USER*,<br>*MYSQL_PASS*,<br>*MYSQL_HOST*<br>*MYSQL_PORT*
- SWISNAP_ENABLE_ORACLEDB           | Set this to `true` to enable the OracleDB plugin. If enabled the following ENV vars are required to be set:<br>*ORACLEDB_USER*,<br>*ORACLEDB_PASS*,<br>*ORACLEDB_HOST*<br>*ORACLEDB_PORT*<br>*ORACLEDB_SERVICE_NAME*
+ SWISNAP_ENABLE_ORACLEDB        | Set this to `true` to enable the OracleDB plugin. If enabled the following ENV vars are required to be set:<br>*ORACLEDB_USER*,<br>*ORACLEDB_PASS*,<br>*ORACLEDB_HOST*<br>*ORACLEDB_PORT*<br>*ORACLEDB_SERVICE_NAME*
  SWISNAP_ENABLE_PROMETHEUS      | Set this to `true` to enable the Prometheus pod annotation scrapping
  SWISNAP_ENABLE_POSTGRESQL      | Set this to `true` to enable the Postgres plugin.  If enabled the following ENV vars are required to be set:<br>*POSTGRES_ADDRESS* - specify address for Postgres databse
  SWISNAP_ENABLE_RABBITMQ        | Set this to `true` to enable the RabbitMQ plugin.
