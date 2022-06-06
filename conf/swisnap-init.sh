@@ -82,9 +82,14 @@ swisnap_config_setup() {
 run_plugins_with_default_configs() {
     # Set to true to enable or disable specific plugins
     if [ "${SWISNAP_ENABLE_APACHE}" = "true" ]; then
-        apache_plugin_config="${PLUGINS_DIR}/apache.yaml.example"
-        if check_if_plugin_supported Apache "${apache_plugin_config}"; then
-            mv "${apache_plugin_config}" "${PLUGINS_DIR}/apache.yaml"
+        apache_plugin_config="${TASK_AUTOLOAD_DIR}/task-apache.yaml"
+        if check_if_plugin_supported Apache "${apache_plugin_config}.example"; then
+            mv "${apache_plugin_config}.example" "${apache_plugin_config}"
+        fi
+        if [[ -n "${APACHE_BASE_URL}" ]]; then
+            yq w -i "${apache_plugin_config}" 'plugins[0].config.apache.apache_mod_status_webservers[0].url' "${APACHE_BASE_URL}/server-status?auto"
+        else
+            echo "WARNING: variable APACHE_BASE_URL needs to be set for Apache plugin"
         fi
     fi
 
@@ -128,6 +133,8 @@ run_plugins_with_default_configs() {
             mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
             if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
                 yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
+            else
+                echo "WARNING: all: ORACLEDB_USER, ORACLEDB_PASS, ORACLEDB_HOST, ORACLEDB_PORT, ORACLEDB_SERVICE_NAME variables needs to be set for OracleDB plugin"
             fi
         fi
     fi
