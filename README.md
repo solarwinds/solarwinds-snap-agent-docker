@@ -78,7 +78,66 @@ kubectl apply -k ./deploy/overlays/stable/daemonset
 Starting from version 4.5.0-* the default monitored container engine is containerd.
 Enable the CRI plugin in the AppOptics UI and you should start seeing data trickle in.
 
-To fallback to the docker plugin and docker-based metrics  
+To fallback to the docker plugin and docker-based metrics please do the following configuration changes:
+
+``` diff
+
+diff --git a/deploy/overlays/stable/daemonset/kustomization.yaml b/deploy/overlays/stable/daemonset/kustomization.yaml
+index c70cd3a..721e56c 100644
+--- a/deploy/overlays/stable/daemonset/kustomization.yaml
++++ b/deploy/overlays/stable/daemonset/kustomization.yaml
+@@ -11,8 +11,8 @@ configMapGenerator:
+   - name: swisnap-host-configmap
+     behavior: merge
+     literals:
+-      - SWISNAP_ENABLE_CRI=true
+-      - SWISNAP_ENABLE_DOCKER=false
++      - SWISNAP_ENABLE_CRI=false
++      - SWISNAP_ENABLE_DOCKER=true
+       - SWISNAP_ENABLE_DOCKER_LOGS=false
+       - SWISNAP_DOCKER_LOGS_CONTAINER_NAMES=""
+
+diff --git a/deploy/overlays/stable/daemonset/patch-containers-engine.yaml b/deploy/overlays/stable/daemonset/patch-containers-engine.yaml
+index 7906acb..ed862b4 100644
+--- a/deploy/overlays/stable/daemonset/patch-containers-engine.yaml
++++ b/deploy/overlays/stable/daemonset/patch-containers-engine.yaml
+@@ -10,24 +10,24 @@ spec:
+       - name: swisnap-agent-ds
+         volumeMounts:
+           ## Docker plugin
+-          # - name: docker-sock
+-          #   mountPath: /var/run/docker.sock
++          - name: docker-sock
++            mountPath: /var/run/docker.sock
+           ## CRI plugin options
+-          - name: containerd-sock
+-            mountPath: /run/containerd/containerd.sock
++          # - name: containerd-sock
++          #   mountPath: /run/containerd/containerd.sock
+           # - name: dockershim-sock
+           #   mountPath: /var/run/dockershim.sock
+           # - name: crio-sock
+           #   mountPath: /run/crio/crio.sock
+       volumes:
+         ## Docker plugin
+-        # - name: docker-sock
+-        #   hostPath:
+-        #     path: /var/run/docker.sock
+-        ## CRI plugin options
+-        - name: containerd-sock
++        - name: docker-sock
+           hostPath:
+-            path: /run/containerd/containerd.sock
++            path: /var/run/docker.sock
++        ## CRI plugin options
++        # - name: containerd-sock
++        #   hostPath:
++        #     path: /run/containerd/containerd.sock
+         # - name: dockershim-sock
+         #   hostPath:
+         #     path: /var/run/dockershim.sock
+
+```
 
 ### Sidecar
 
