@@ -101,11 +101,11 @@ run_plugins_with_default_configs() {
     fi
 
     if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
-        docker_plugin_config="${PLUGINS_DIR}/docker.yaml"
+        docker_plugin_config="${TASK_AUTOLOAD_DIR}/task-docker.yaml"
         if check_if_plugin_supported Docker "${docker_plugin_config}.example"; then
             mv "${docker_plugin_config}.example" "${docker_plugin_config}"
             if [[ -n "${HOST_PROC}" ]]; then
-                sed -i 's,procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${docker_plugin_config}"
+                sed -i 's,#procfs: "/proc",procfs: "'"${HOST_PROC}"'",g' "${docker_plugin_config}"
             fi
         fi
     fi
