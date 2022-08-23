@@ -10,6 +10,11 @@ PUBLISHER_PROCESSES_CONFIG="${PLUGINS_DIR}/publisher-processes.yaml"
 PUBLISHER_APPOPTICS_CONFIG="${PLUGINS_DIR}/publisher-appoptics.yaml"
 PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
+enable_incluster() {
+    local task_file="${1}"
+    yq w -i "${task_file}" plugins[0].config.kubernetes.incluster -- "true"
+}
+
 swisnap_config_setup() {
     echo "Running swisnap_config_setup"
     # SOLARWINDS_TOKEN is required. Please note, that APPOPTICS_TOKEN is left for preserving backward compatibility
@@ -77,9 +82,14 @@ swisnap_config_setup() {
 run_plugins_with_default_configs() {
     # Set to true to enable or disable specific plugins
     if [ "${SWISNAP_ENABLE_APACHE}" = "true" ]; then
-        apache_plugin_config="${PLUGINS_DIR}/apache.yaml.example"
-        if check_if_plugin_supported Apache "${apache_plugin_config}"; then
-            mv "${apache_plugin_config}" "${PLUGINS_DIR}/apache.yaml"
+        apache_plugin_config="${TASK_AUTOLOAD_DIR}/task-apache.yaml"
+        if check_if_plugin_supported Apache "${apache_plugin_config}.example"; then
+            mv "${apache_plugin_config}.example" "${apache_plugin_config}"
+        fi
+        if [[ -n "${APACHE_STATUS_URI}" ]]; then
+            yq w -i "${apache_plugin_config}" 'plugins[0].config.apache.apache_mod_status_webservers[0].url' "${APACHE_STATUS_URI}"
+        else
+            echo "WARNING: variable APACHE_STATUS_URI needs to be set for Apache plugin"
         fi
     fi
 
@@ -110,16 +120,32 @@ run_plugins_with_default_configs() {
         fi
     fi
 
-
     if [ "${SWISNAP_ENABLE_ELASTICSEARCH}" = "true" ]; then
-        if check_if_plugin_supported Elasticsearch "${PLUGINS_DIR}/elasticsearch.yaml.example"; then
-            mv "${PLUGINS_DIR}/elasticsearch.yaml.example" "${PLUGINS_DIR}/elasticsearch.yaml"
+        elasticsearch_plugin_config="${TASK_AUTOLOAD_DIR}/task-elasticsearch.yaml"
+        if check_if_plugin_supported Elasticsearch "${elasticsearch_plugin_config}.example"; then
+            mv "${elasticsearch_plugin_config}.example" "${elasticsearch_plugin_config}"
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_HAPROXY}" = "true" ]; then
+        haproxy_plugin_config="${TASK_AUTOLOAD_DIR}/task-haproxy.yaml"
+        if check_if_plugin_supported HAProxy "${haproxy_plugin_config}.example"; then
+            mv "${haproxy_plugin_config}.example" "${haproxy_plugin_config}"
+        fi
+        if [[ -n "${HAPROXY_STATS_URI}" ]]; then
+            yq w -i "${haproxy_plugin_config}" 'plugins[0].config.haproxy.endpoints[0].url' "${HAPROXY_STATS_URI}"
+        else
+            echo "WARNING: variable HAPROXY_STATS_URI needs to be set for HAProxy plugin"
         fi
     fi
 
     if [ "${SWISNAP_ENABLE_KUBERNETES}" = "true" ]; then
-        if check_if_plugin_supported Kubernetes "${PLUGINS_DIR}/kubernetes.yaml.example"; then
-            mv "${PLUGINS_DIR}/kubernetes.yaml.example" "${PLUGINS_DIR}/kubernetes.yaml"
+        kubernetes_plugin_config="${TASK_AUTOLOAD_DIR}/task-kubernetes.yaml"
+        if check_if_plugin_supported Kubernetes "${kubernetes_plugin_config}.example"; then
+            mv "${kubernetes_plugin_config}.example" "${kubernetes_plugin_config}"
+            if [ "${IN_CLUSTER}" = "true" ]; then
+                enable_incluster "${kubernetes_plugin_config}"
+            fi
         fi
     fi
 
@@ -198,6 +224,18 @@ run_plugins_with_default_configs() {
                 yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
             else
                 echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
+            fi
+        fi
+    fi
+
+    if [ "${SWISNAP_ENABLE_ORACLEDB}" = "true" ]; then
+        oracledb_plugin_config="${TASK_AUTOLOAD_DIR}/task-oracledb.yaml"
+        if check_if_plugin_supported OracleDB "${oracledb_plugin_config}.example"; then
+            mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
+            if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
+                yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
+            else
+                echo "WARNING: all: ORACLEDB_USER, ORACLEDB_PASS, ORACLEDB_HOST, ORACLEDB_PORT, ORACLEDB_SERVICE_NAME variables needs to be set for OracleDB plugin"
             fi
         fi
     fi
