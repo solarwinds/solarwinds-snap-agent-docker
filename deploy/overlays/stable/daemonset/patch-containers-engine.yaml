@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: swisnap-agent-ds
+spec:
+  template:
+    spec:
+      containers:
+      - name: swisnap-agent-ds
+        volumeMounts:
+          ## Docker plugin
+          # - name: docker-sock
+          #   mountPath: /var/run/docker.sock
+          ## CRI plugin options
+          - name: containerd-sock
+            mountPath: /run/containerd/containerd.sock
+          # - name: dockershim-sock
+          #   mountPath: /var/run/dockershim.sock
+          # - name: crio-sock
+          #   mountPath: /run/crio/crio.sock
+      volumes:
+        ## Docker plugin
+        # - name: docker-sock
+        #   hostPath:
+        #     path: /var/run/docker.sock
+        ## CRI plugin options
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
+        # - name: dockershim-sock
+        #   hostPath:
+        #     path: /var/run/dockershim.sock
+        # - name: crio-sock
+        #   hostPath:
+        #     path: /run/crio/crio.sock

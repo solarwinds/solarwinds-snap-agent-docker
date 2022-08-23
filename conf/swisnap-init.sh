@@ -93,6 +93,13 @@ run_plugins_with_default_configs() {
         fi
     fi
 
+    if [ "${SWISNAP_ENABLE_CRI}" = "true" ]; then
+        cri_plugin_config="${TASK_AUTOLOAD_DIR}/task-cri.yaml"
+        if check_if_plugin_supported CRI "${cri_plugin_config}.example"; then
+            mv "${cri_plugin_config}.example" "${cri_plugin_config}"
+        fi
+    fi
+
     if [ "${SWISNAP_ENABLE_DOCKER}" = "true" ]; then
         docker_plugin_config="${PLUGINS_DIR}/docker.yaml"
         if check_if_plugin_supported Docker "${docker_plugin_config}.example"; then

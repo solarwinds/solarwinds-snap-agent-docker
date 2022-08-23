@@ -13,6 +13,7 @@ configMapGenerator:
     behavior: create
     literals:
       - SWISNAP_ENABLE_APACHE=false
+      - SWISNAP_ENABLE_CRI=false
       - SWISNAP_ENABLE_DOCKER=false
       - SWISNAP_ENABLE_ELASTICSEARCH=false
       - SWISNAP_ENABLE_HAPROXY=false

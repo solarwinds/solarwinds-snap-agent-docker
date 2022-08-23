@@ -72,8 +72,6 @@ spec:
             - configMapRef:
                 name: swisnap-host-configmap
           volumeMounts:
-            - name: docker-sock
-              mountPath: /var/run/docker.sock
             - name: proc
               mountPath: /host/proc
               readOnly: true
@@ -99,9 +97,6 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 5
       volumes:
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
         - name: proc
           hostPath:
             path: /proc
