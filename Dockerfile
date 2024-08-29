@@ -1,4 +1,5 @@
-FROM ubuntu:focal
+# FROM ubuntu:focal
+FROM ubuntu:jammy
 
 LABEL authors='SolarWinds AppOptics team <technicalsupport@solarwinds.com>'
 
