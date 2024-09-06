@@ -524,7 +524,6 @@ Note: If these tokens are the same, there is no need to perform this step - in t
 
 * Watch your cluster events in Loggly, or Papertrail.
 
-
 ## Dashboard
 Successful deployments will report metrics in the AppOptics Kubernetes Dashboard.
 <img src="kubernetes-appoptics-dashboard.png" width="400px" align="middle">
