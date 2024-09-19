@@ -4,7 +4,7 @@ LABEL authors='SolarWinds AppOptics team <technicalsupport@solarwinds.com>'
 
 USER root
 ARG DEBIAN_FRONTEND=noninteractive
-ARG swisnap_repo=swisnap
+ARG swisnap_repo=swisnap-stg
 
 ENV SNAP_URL=http://127.0.0.1:21413
 
