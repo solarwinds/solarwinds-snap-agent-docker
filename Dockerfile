@@ -32,6 +32,8 @@ ARG swisnap_version
 RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ focal main" > /etc/apt/sources.list.d/swisnap.list && \
   curl -L https://packagecloud.io/solarwinds/${swisnap_repo}/gpgkey | apt-key add - && \
   apt-get update && \
+  apt-cache policy solarwinds-snap-agent && \
+  apt-get update && \  
   apt-get -y install solarwinds-snap-agent=${swisnap_version} && \
   usermod -aG root solarwinds && \
   apt-get -y purge curl && \
