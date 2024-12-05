@@ -157,7 +157,6 @@ run_plugins_with_default_configs() {
             mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
             yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.incluster = true' "${KUBERNETES_LOGS_CONFIG}"
             yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.filters = [{"namespace": "default", "watch_only": true, "options": {"fieldSelector": "type==Normal"}}]' "${KUBERNETES_LOGS_CONFIG}"
-
         fi
     fi
 
