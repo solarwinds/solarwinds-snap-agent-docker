@@ -118,13 +118,7 @@ run_plugins_with_default_configs() {
             for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
                 yq eval -i '.plugins[] |= select(.plugin_name == "docker-logs").config.logs += [{"filters": {"name": {"'"${cont_name}"'": true}}}]' "${DOCKER_LOGS_CONFIG}"
             done
-
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.showstdout = true' "${DOCKER_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.showstderr = true' "${DOCKER_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.follow = true' "${DOCKER_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.tail = "all"' "${DOCKER_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.since = ""' "${DOCKER_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.since = "" | .plugins[] | select(.plugin_name == "docker-logs").config.logs[].options.since tag= "!!str"' "${DOCKER_LOGS_CONFIG}"
+            yq eval -i '.plugins[] |= select(.plugin_name == "docker-logs").config.logs += [{"options": {"showstdout": true, "showstderr": true, "follow": true, "tail": "all", "since": ""}}]' "${DOCKER_LOGS_CONFIG}"
         fi
     fi
 
@@ -161,10 +155,9 @@ run_plugins_with_default_configs() {
         KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
         if check_if_plugin_supported "Kubernetes Logs" "${KUBERNETES_LOGS_CONFIG}.example"; then
             mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "k8s-events").config.incluster = true' "${KUBERNETES_LOGS_CONFIG}"
-            yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.filters += [{"namespace": "default"}]' "${KUBERNETES_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "k8s-events").config.filters[].watch_only = true' "${KUBERNETES_LOGS_CONFIG}"
-            yq eval -i '.plugins[] | select(.plugin_name == "k8s-events").config.filters[].options.fieldSelector = "type==Normal"' "${KUBERNETES_LOGS_CONFIG}"
+            yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.incluster = true' "${KUBERNETES_LOGS_CONFIG}"
+            yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.filters = [{"namespace": "default", "watch_only": true, "options": {"fieldSelector": "type==Normal"}}]' "${KUBERNETES_LOGS_CONFIG}"
+
         fi
     fi
 
