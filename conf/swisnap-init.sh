@@ -12,7 +12,7 @@ PUBLISHER_LOGS_CONFIG="${PLUGINS_DIR}/publisher-logs.yaml"
 
 enable_incluster() {
     local task_file="${1}"
-    yq w -i "${task_file}" plugins[0].config.kubernetes.incluster -- "true"
+    yq eval -i '.plugins[0].config.kubernetes.incluster = true' "${task_file}"
 }
 
 swisnap_config_setup() {
@@ -27,29 +27,29 @@ swisnap_config_setup() {
         exit 1
     fi
 
-    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.token -- "${SWI_TOKEN}"
-    yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.token -- "${SWI_TOKEN}"
-    yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.token -- "${SWI_TOKEN}"
+    yq eval -i '.v1.publisher."publisher-appoptics".all.token = "'"${SWI_TOKEN}"'"' "${PUBLISHER_APPOPTICS_CONFIG}"
+    yq eval -i '.v2.publisher."publisher-appoptics".all.endpoint.token = "'"${SWI_TOKEN}"'"' "${PUBLISHER_APPOPTICS_CONFIG}"    
+    yq eval -i '.v2.publisher."publisher-processes".all.endpoint.token = "'"${SWI_TOKEN}"'"' "${PUBLISHER_PROCESSES_CONFIG}"   
 
     # Use APPOPTICS_HOSTNAME as hostname_alias
     if [ -n "${APPOPTICS_HOSTNAME}" ]; then
-        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v1.publisher.publisher-appoptics.all.hostname_alias "${APPOPTICS_HOSTNAME}"
-        yq w -i "${PUBLISHER_APPOPTICS_CONFIG}" v2.publisher.publisher-appoptics.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
-        yq w -i "${PUBLISHER_PROCESSES_CONFIG}" v2.publisher.publisher-processes.all.endpoint.hostname_alias "${APPOPTICS_HOSTNAME}"
+        yq eval -i '.v1.publisher."publisher-appoptics".all.hostname_alias = "'"${APPOPTICS_HOSTNAME}"'"' "${PUBLISHER_APPOPTICS_CONFIG}"
+        yq eval -i '.v2.publisher."publisher-appoptics".all.endpoint.hostname_alias = "'"${APPOPTICS_HOSTNAME}"'"' "${PUBLISHER_APPOPTICS_CONFIG}"
+        yq eval -i '.v2.publisher."publisher-processes".all.endpoint.hostname_alias = "'"${APPOPTICS_HOSTNAME}"'"' "${PUBLISHER_PROCESSES_CONFIG}"
     fi
 
     if [ -n "${LOG_LEVEL}" ]; then
-        yq w -i $CONFIG_FILE log_level "${LOG_LEVEL}"
+        yq eval -i '.log_level = strenv(LOG_LEVEL)' "${CONFIG_FILE}"
     fi
 
     if [ "${SWISNAP_SECURE}" = true ]; then
         FLAGS=("--keyring-paths" "${SWISNAP_HOME}/.gnupg/")
     else
-        yq w -i ${CONFIG_FILE} control.plugin_trust_level 0
+        yq eval -i '.control.plugin_trust_level = 0' "${CONFIG_FILE}"
     fi
 
-    yq w -i ${CONFIG_FILE} log_path "${LOG_PATH:-/proc/self/fd/1}"
-    yq w -i ${CONFIG_FILE} restapi.addr "tcp://0.0.0.0:21413"
+    yq eval -i '.log_path = strenv(LOG_PATH) // "/proc/self/fd/1"' "${CONFIG_FILE}"
+    yq eval -i '.restapi.addr = "tcp://0.0.0.0:21413"' "${CONFIG_FILE}"
 
     # Logs Publishers releated configs
     if [ -n "${LOGGLY_TOKEN}" ] && [ "${LOGGLY_TOKEN}" != 'LOGGLY_TOKEN' ]; then
@@ -58,9 +58,9 @@ swisnap_config_setup() {
         LOGGLY_PUBL_TOKEN="${SWI_TOKEN}"
     fi
 
-    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http.all.token -- "${LOGGLY_PUBL_TOKEN}"
-    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-http-bulk.all.token -- "${LOGGLY_PUBL_TOKEN}"
-    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.loggly-syslog.all.token -- "${LOGGLY_PUBL_TOKEN}"
+    yq eval -i '.v2.publisher."loggly-http".all.token = "'"${LOGGLY_PUBL_TOKEN}"'"' "${PUBLISHER_LOGS_CONFIG}"
+    yq eval -i '.v2.publisher."loggly-http-bulk".all.token = "'"${LOGGLY_PUBL_TOKEN}"'"' "${PUBLISHER_LOGS_CONFIG}"
+    yq eval -i '.v2.publisher."loggly-syslog".all.token = "'"${LOGGLY_PUBL_TOKEN}"'"' "${PUBLISHER_LOGS_CONFIG}"
 
     if [ -n "${PAPERTRAIL_TOKEN}" ] && [ "${PAPERTRAIL_TOKEN}" != 'PAPERTRAIL_TOKEN' ]; then
         PAPERTRAIL_PUBL_TOKEN="${PAPERTRAIL_TOKEN}"
@@ -68,12 +68,12 @@ swisnap_config_setup() {
         PAPERTRAIL_PUBL_TOKEN="${SWI_TOKEN}"
     fi
 
-    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http-bulk.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
-    yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.swi-logs-http.all.token -- "${PAPERTRAIL_PUBL_TOKEN}"
+    yq eval -i '.v2.publisher."swi-logs-http-bulk".all.token = "'"${PAPERTRAIL_PUBL_TOKEN}"'"' "${PUBLISHER_LOGS_CONFIG}"
+    yq eval -i '.v2.publisher."swi-logs-http".all.token = "'"${PAPERTRAIL_PUBL_TOKEN}"'"' "${PUBLISHER_LOGS_CONFIG}"
 
     if [ -n "${PAPERTRAIL_HOST}" ] && [ -n "${PAPERTRAIL_PORT}" ]; then
-       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.host "${PAPERTRAIL_HOST}"
-       yq w -i "${PUBLISHER_LOGS_CONFIG}" v2.publisher.papertrail-syslog.all.port "${PAPERTRAIL_PORT}"
+        yq eval -i '.v2.publisher."papertrail-syslog".all.host = strenv(PAPERTRAIL_HOST)' "${PUBLISHER_LOGS_CONFIG}"
+        yq eval -i '.v2.publisher."papertrail-syslog".all.port = strenv(PAPERTRAIL_PORT)' "${PUBLISHER_LOGS_CONFIG}"
     fi
 
 
@@ -87,7 +87,7 @@ run_plugins_with_default_configs() {
             mv "${apache_plugin_config}.example" "${apache_plugin_config}"
         fi
         if [[ -n "${APACHE_STATUS_URI}" ]]; then
-            yq w -i "${apache_plugin_config}" 'plugins[0].config.apache.apache_mod_status_webservers[0].url' "${APACHE_STATUS_URI}"
+            yq eval -i ".plugins[0].config.apache.apache_mod_status_webservers[0].url = strenv(APACHE_STATUS_URI)" "${apache_plugin_config}"
         else
             echo "WARNING: variable APACHE_STATUS_URI needs to be set for Apache plugin"
         fi
@@ -114,16 +114,11 @@ run_plugins_with_default_configs() {
         DOCKER_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-docker.yaml"
         if check_if_plugin_supported "Docker Logs" "${DOCKER_LOGS_CONFIG}.example"; then
             mv "${DOCKER_LOGS_CONFIG}.example" "${DOCKER_LOGS_CONFIG}"
-            yq d -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs'
+            yq eval -i 'del(.plugins[] | select(.plugin_name == "docker-logs").config.logs)' "${DOCKER_LOGS_CONFIG}"
             for cont_name in ${SWISNAP_DOCKER_LOGS_CONTAINER_NAMES}; do
-                yq w -i "${DOCKER_LOGS_CONFIG}" "plugins.(plugin_name==docker-logs).config.logs[+].filters.name.${cont_name}" true
+                yq eval -i '.plugins[] |= select(.plugin_name == "docker-logs").config.logs += [{"filters": {"name": {"'"${cont_name}"'": true}}}]' "${DOCKER_LOGS_CONFIG}"
             done
-
-            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstdout' true
-            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.showstderr' true
-            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.follow' true
-            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.tail' all
-            yq w -i "${DOCKER_LOGS_CONFIG}" 'plugins.(plugin_name==docker-logs).config.logs[*].options.since' --tag '!!str' ""
+            yq eval -i '.plugins[] |= select(.plugin_name == "docker-logs").config.logs += [{"options": {"showstdout": true, "showstderr": true, "follow": true, "tail": "all", "since": ""}}]' "${DOCKER_LOGS_CONFIG}"
         fi
     fi
 
@@ -140,7 +135,7 @@ run_plugins_with_default_configs() {
             mv "${haproxy_plugin_config}.example" "${haproxy_plugin_config}"
         fi
         if [[ -n "${HAPROXY_STATS_URI}" ]]; then
-            yq w -i "${haproxy_plugin_config}" 'plugins[0].config.haproxy.endpoints[0].url' "${HAPROXY_STATS_URI}"
+            yq eval -i ".plugins[0].config.haproxy.endpoints[0].url = strenv(HAPROXY_STATS_URI)" "${haproxy_plugin_config}"
         else
             echo "WARNING: variable HAPROXY_STATS_URI needs to be set for HAProxy plugin"
         fi
@@ -160,10 +155,8 @@ run_plugins_with_default_configs() {
         KUBERNETES_LOGS_CONFIG="${TASK_AUTOLOAD_DIR}/task-logs-k8s-events.yaml"
         if check_if_plugin_supported "Kubernetes Logs" "${KUBERNETES_LOGS_CONFIG}.example"; then
             mv "${KUBERNETES_LOGS_CONFIG}.example" "${KUBERNETES_LOGS_CONFIG}"
-            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.incluster' 'true'
-            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[+].namespace' 'default'
-            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].watch_only' 'true'
-            yq w -i "${KUBERNETES_LOGS_CONFIG}" 'plugins.(plugin_name==k8s-events).config.filters[*].options.fieldSelector' 'type==Normal'
+            yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.incluster = true' "${KUBERNETES_LOGS_CONFIG}"
+            yq eval -i '.plugins[] |= select(.plugin_name == "k8s-events").config.filters = [{"namespace": "default", "watch_only": true, "options": {"fieldSelector": "type==Normal"}}]' "${KUBERNETES_LOGS_CONFIG}"
         fi
     fi
 
@@ -172,9 +165,9 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported Nginx "${NGINX_CONFIG}.example"; then
             mv "${NGINX_CONFIG}.example" "${NGINX_CONFIG}"
             if [[ -n "${NGINX_STATUS_URI}" ]]; then
-               yq d -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls'
+            yq eval -i 'del(.plugins[] | select(.plugin_name == "bridge").config.nginx.urls)' "${NGINX_CONFIG}"
                for nginx_uri in ${NGINX_STATUS_URI}; do
-                   yq w -i "${NGINX_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx.urls[+]' "${nginx_uri}"
+                   yq eval -i '.plugins[] |= select(.plugin_name == "bridge").config.nginx.urls += ["'"${nginx_uri}"'"]' "${NGINX_CONFIG}"
                done
             else
                 echo "WARNING: NGINX_STATUS_URI var was not set for Nginx plugin"
@@ -187,9 +180,9 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported "Nginx Plus" "${NGINX_PLUS_CONFIG}.example"; then
             mv "${NGINX_PLUS_CONFIG}.example" "${NGINX_PLUS_CONFIG}"
             if [[ -n "${NGINX_PLUS_STATUS_URI}" ]]; then
-               yq d -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls'
+            yq eval -i 'del(.plugins[] | select(.plugin_name == "bridge").config.nginx_plus.urls)' "${NGINX_PLUS_CONFIG}"
                for nginx_plus_uri in ${NGINX_PLUS_STATUS_URI}; do
-                   yq w -i "${NGINX_PLUS_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus.urls[+]' "${nginx_plus_uri}"
+                yq eval -i '.plugins[] |= select(.plugin_name == "bridge").config.nginx_plus.urls += ["'"${nginx_plus_uri}"'"]' "${NGINX_PLUS_CONFIG}"
                done
             else
                 echo "WARNING: NGINX_PLUS_STATUS_URI var was not set for Nginx Plus plugin"
@@ -202,9 +195,9 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported "Nginx Plus Api" "${NGINX_PLUS_API_CONFIG}.example"; then
             mv "${NGINX_PLUS_API_CONFIG}.example" "${NGINX_PLUS_API_CONFIG}"
             if [[ -n "${NGINX_PLUS_API_URI}" ]]; then
-               yq d -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls'
+            yq eval -i 'del(.plugins[] | select(.plugin_name == "bridge").config.nginx_plus_api.urls)' "${NGINX_PLUS_API_CONFIG}"
                for nginx_plus_uri in ${NGINX_PLUS_API_URI}; do
-                   yq w -i "${NGINX_PLUS_API_CONFIG}" 'plugins.(plugin_name==bridge).config.nginx_plus_api.urls[+]' "${nginx_plus_uri}"
+                yq eval -i '.plugins[] |= select(.plugin_name == "bridge").config.nginx_plus_api.urls += ["'"${nginx_plus_uri}"'"]' "${NGINX_PLUS_API_CONFIG}"
                done
             else
                 echo "WARNING: NGINX_PLUS_API_URI var was not set for Nginx Plus Api plugin"
@@ -228,7 +221,8 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported MySQL "${PLUGINS_DIR}/mysql.yaml.example"; then
             mv "${PLUGINS_DIR}/mysql.yaml.example" "${PLUGINS_DIR}/mysql.yaml"
             if [[ -n "${MYSQL_USER}" && -n "${MYSQL_HOST}" && -n "${MYSQL_PORT}" ]]; then
-                yq w -i "${PLUGINS_DIR}/mysql.yaml" collector.mysql.all.mysql_connection_string "\"${MYSQL_USER}:${MYSQL_PASS}@tcp\(${MYSQL_HOST}:${MYSQL_PORT}\)\/\""
+                connection_string="${MYSQL_USER}:${MYSQL_PASS}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/"
+                yq eval -i ".collector.mysql.all.mysql_connection_string = \"$connection_string\"" "${PLUGINS_DIR}/mysql.yaml"                
             else
                 echo "WARNING: all: MYSQL_USER, MYSQL_HOST, MYSQL_PORT variables needs to be set for MySQL plugin"
             fi
@@ -240,7 +234,7 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported OracleDB "${oracledb_plugin_config}.example"; then
             mv "${oracledb_plugin_config}.example" "${oracledb_plugin_config}"
             if [[ -n "${ORACLEDB_USER}" ]] && [[ -n "${ORACLEDB_PASS}" ]] && [[ -n "${ORACLEDB_HOST}" ]]  && [[ -n "${ORACLEDB_PORT}" ]]&& [[ -n "${ORACLEDB_SERVICE_NAME}" ]]; then
-                yq w -i "${oracledb_plugin_config}" 'plugins[0].config.oracledb.connection_strings[0]' "oracle://${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"
+                yq eval -i '.plugins[0].config.oracledb.connection_strings[0] = "oracle://'"${ORACLEDB_USER}:${ORACLEDB_PASS}@${ORACLEDB_HOST}:${ORACLEDB_PORT}/${ORACLEDB_SERVICE_NAME}"'"' "${oracledb_plugin_config}"                
             else
                 echo "WARNING: all: ORACLEDB_USER, ORACLEDB_PASS, ORACLEDB_HOST, ORACLEDB_PORT, ORACLEDB_SERVICE_NAME variables needs to be set for OracleDB plugin"
             fi
@@ -252,7 +246,7 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported "PostgreSQL" "${POSTGRES_CONFIG}.example"; then
             mv "${POSTGRES_CONFIG}.example" "${POSTGRES_CONFIG}"
             if [[ -n "${POSTGRES_ADDRESS}" ]]; then
-                yq w -i "${POSTGRES_CONFIG}" 'plugins.(plugin_name==bridge).config.postgresql.address' "${POSTGRES_ADDRESS}"
+                yq eval -i '.plugins[] |= select(.plugin_name == "bridge").config.postgresql.address = strenv(POSTGRES_ADDRESS)' "${POSTGRES_CONFIG}"
             else
                 echo "WARNING: POSTGRES_ADDRESS var was not set for Postgres plugin."
             fi
@@ -263,8 +257,8 @@ run_plugins_with_default_configs() {
         PROMETHEUS_CONFIG="${TASK_AUTOLOAD_DIR}/task-bridge-prometheus.yaml"
         if check_if_plugin_supported "Prometheus" "${PROMETHEUS_CONFIG}.example"; then
             mv "${PROMETHEUS_CONFIG}.example" "${PROMETHEUS_CONFIG}"
-            yq w -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.monitor_kubernetes_pods true
-            yq d -i "${PROMETHEUS_CONFIG}" plugins[0].config.prometheus.urls
+            yq eval -i '.plugins[0].config.prometheus.monitor_kubernetes_pods = true' "${PROMETHEUS_CONFIG}"
+            yq eval -i 'del(.plugins[0].config.prometheus.urls)' "${PROMETHEUS_CONFIG}"
         fi
     fi
 
@@ -279,9 +273,9 @@ run_plugins_with_default_configs() {
         if check_if_plugin_supported "Redis" "${REDIS_CONFIG}.example"; then
             mv "${REDIS_CONFIG}.example" "${REDIS_CONFIG}"
             if [[ -n "${REDIS_SERVERS}" ]]; then
-                yq d -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers'
+                yq eval -i 'del(.plugins[] | select(.plugin_name == "bridge").config.redis.servers)' "${REDIS_CONFIG}"
                 for redis_server in ${REDIS_SERVERS}; do
-                    yq w -i "${REDIS_CONFIG}" 'plugins.(plugin_name==bridge).config.redis.servers[+]' "${redis_server}"
+                    yq eval -i '.plugins[] |= select(.plugin_name == "bridge").config.redis.servers += ["'"${redis_server}"'"]' "${REDIS_CONFIG}"
                 done
             else
                 echo "WARNING: REDIS_SERVERS var was not set for Redis plugin."
@@ -295,8 +289,8 @@ run_plugins_with_default_configs() {
             mv "${SOCKET_LISTENER_CONFIG}.example" "${SOCKET_LISTENER_CONFIG}"
             if [[ -n "${SOCKET_SERVICE_ADDRESS}" ]] && [[ -n "${SOCKET_DATA_FORMAT}" ]]; then
                 echo "INFO: setting service_address for Socket Listener plugin to ${SOCKET_SERVICE_ADDRESS} and data format to ${SOCKET_DATA_FORMAT}"
-                yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.service_address' "${SOCKET_SERVICE_ADDRESS}"
-                yq w -i "${SOCKET_LISTENER_CONFIG}" 'plugins.(plugin_name==bridge-stream).config.socket_listener.data_format' "${SOCKET_DATA_FORMAT}"
+                yq eval -i '.plugins[] |= select(.plugin_name == "bridge-stream").config.socket_listener.service_address = "'"${SOCKET_SERVICE_ADDRESS}"'"' "${SOCKET_LISTENER_CONFIG}"
+                yq eval -i '.plugins[] |= select(.plugin_name == "bridge-stream").config.socket_listener.data_format = "'"${SOCKET_DATA_FORMAT}"'"' "${SOCKET_LISTENER_CONFIG}"
             else
                 echo "WARNING: both SOCKET_SERVICE_ADDRESS and SOCKET_DATA_FORMAT needs to be set for socket listener plugin"
             fi
@@ -345,7 +339,7 @@ set_custom_tags() {
         for TAG in ${APPOPTICS_CUSTOM_TAGS}; do
             KEY=${TAG%%=*}
             VALUE=${TAG##*=}
-            yq w -i ${CONFIG_FILE} "control.tags./[${KEY}]" "${VALUE}"
+            yq eval -i '.control.tags."/".["'"${KEY}"'"] = "'"${VALUE}"'"' "${CONFIG_FILE}"
         done
     fi
 }

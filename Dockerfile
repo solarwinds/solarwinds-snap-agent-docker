@@ -14,8 +14,12 @@ RUN apt-get update && \
       apt-transport-https \
       ca-certificates \
       curl \
-      docker.io \
-      gnupg && \
+      gnupg \
+      lsb-release && \
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+      apt-get update && \
+      apt-get install -y docker-ce docker-ce-cli containerd.io && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -24,7 +28,7 @@ RUN arch="$(uname -m)" && if [ "${arch}" = "aarch64" ]; then \
     elif [ "${arch}" = "x86_64" ]; then \
       yq_arch=amd64; \ 
     fi && \ 
-    curl -L "https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_${yq_arch}" -o yq && \
+    curl -L "https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_${yq_arch}" -o yq && \
     mv yq /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
@@ -34,6 +38,8 @@ RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ focal m
   apt-get update && \
   apt-get -y install solarwinds-snap-agent=${swisnap_version} && \
   usermod -aG root solarwinds && \
+  getent group docker || groupadd docker && \
+  usermod -aG docker solarwinds && \
   apt-get -y purge curl && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
