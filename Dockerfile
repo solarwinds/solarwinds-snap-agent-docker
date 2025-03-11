@@ -49,7 +49,8 @@ RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ focal m
 
 COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 WORKDIR /opt/SolarWinds/Snap
-RUN chmod +x /opt/SolarWinds/Snap/etc/init.sh
+# add explict file permission after copy
+RUN chmod +x /opt/SolarWinds/Snap/etc/init.sh 
 
 EXPOSE 21413
 # Run SolarWinds Snap Agent
