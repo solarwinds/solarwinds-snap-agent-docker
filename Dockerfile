@@ -28,7 +28,7 @@ RUN arch="$(uname -m)" && if [ "${arch}" = "aarch64" ]; then \
     elif [ "${arch}" = "x86_64" ]; then \
       yq_arch=amd64; \ 
     fi && \ 
-    curl -L "https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_${yq_arch}" -o yq && \
+    curl -L "https://github.com/mikefarah/yq/releases/download/v4.44.6/yq_linux_${yq_arch}" -o yq && \
     mv yq /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
@@ -49,6 +49,7 @@ RUN echo "deb https://packagecloud.io/solarwinds/${swisnap_repo}/ubuntu/ focal m
 
 COPY ./conf/swisnap-init.sh /opt/SolarWinds/Snap/etc/init.sh
 WORKDIR /opt/SolarWinds/Snap
+RUN chmod +x /opt/SolarWinds/Snap/etc/init.sh 
 
 EXPOSE 21413
 # Run SolarWinds Snap Agent
